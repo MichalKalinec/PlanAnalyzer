@@ -1,0 +1,29 @@
+
+
+Version:	3.10
+CmdLine:	D:\1. miesto=štúdium\Bakalarka\PlanChecker\planchecker.exe --l4j-debug
+WOW64:		yes
+Create mutex:	PlanChecker
+Working dir:	D:\1. miesto=štúdium\Bakalarka\PlanChecker\.
+Java min ver:	1.8.0_092
+Java max ver:	
+Bundled JRE:	jre1.8.0_92
+Check launcher:	D:\1. miesto=štúdium\Bakalarka\PlanChecker\jre1.8.0_92\bin\javaw.exe (not found)
+64-bit search:	SOFTWARE\JavaSoft\Java Runtime Environment...
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8
+Ignore:		1.8
+Check:		SOFTWARE\JavaSoft\Java Runtime Environment\1.8.0_92
+Check launcher:	C:\Program Files\Java\jre1.8.0_92\bin\javaw.exe (OK)
+Match:		1.8.0_092
+64-bit search:	SOFTWARE\JavaSoft\Java Development Kit...
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8
+Ignore:		1.8
+Check:		SOFTWARE\JavaSoft\Java Development Kit\1.8.0_92
+Ignore:		1.8.0_092
+64-bit search:	SOFTWARE\JavaSoft\JRE...
+64-bit search:	SOFTWARE\JavaSoft\JDK...
+Runtime used:	1.8.0_092 (64-bit)
+Launcher:	C:\Program Files\Java\jre1.8.0_92\bin\javaw.exe
+Launcher args:	-jar "D:\1. miesto=štúdium\Bakalarka\PlanChecker\planchecker.exe"
+Args length:	65/32768 chars
+Exit code:	0
