@@ -1,5 +1,6 @@
 package core;
 
+import utils.OperationBuilder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -77,17 +78,47 @@ public class OperationsList {
         return filtered;
     }
 
-    public static OperationsList showOrder(String orderNo) throws SQLException {
+    public static OperationsList searchWithOrderNo(String orderNo) throws SQLException {
         OperationsList filtered = new OperationsList();
+        orderNo = orderNo
+                    .replace("!", "!!")
+                    .replace("%", "!%")
+                    .replace("_", "!_")
+                    .replace("[", "![");
         try (Connection conn = DBUtils.connect();
                 PreparedStatement st = conn.prepareStatement(BASIC_SQL
-                        + " WHERE A.orderno = ?")) {
-            st.setString(1, orderNo);
+                        + " WHERE A.orderNo LIKE ? ESCAPE '!'"
+                        + " ORDER BY A.orderNo, A.opNo")) {
+            st.setString(1, "%" + orderNo + "%");
             try (ResultSet r = st.executeQuery()) {
                 while (r.next()) {
                     filtered.createOp(r);
                 }
-
+            }
+        } catch (SQLException ex) {
+            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
+            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
+            throw new SQLException(msg, ex);
+        }
+        return filtered;
+    }
+    
+    public static OperationsList searchWithItemNo(String itemNo) throws SQLException {
+        OperationsList filtered = new OperationsList();
+        itemNo = itemNo
+                    .replace("!", "!!")
+                    .replace("%", "!%")
+                    .replace("_", "!_")
+                    .replace("[", "![");
+        try (Connection conn = DBUtils.connect();
+                PreparedStatement st = conn.prepareStatement(BASIC_SQL
+                        + " WHERE B.mford_item LIKE ? ESCAPE '!'"
+                        + " ORDER BY B.mford_item, A.opNo")) {
+            st.setString(1, "%" + itemNo + "%");
+            try (ResultSet r = st.executeQuery()) {
+                while (r.next()) {
+                    filtered.createOp(r);
+                }
             }
         } catch (SQLException ex) {
             String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
@@ -110,7 +141,6 @@ public class OperationsList {
                         + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc < B.mfop_planqty)"
                         + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc IS NULL)) AND (A.manualEnd IS NULL))", conn)) {
             while (r.next()) {
-                System.err.println(1);
                 if (unfinishedOnly && r.getBoolean(16) == true) {
                     continue;
                 }

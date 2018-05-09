@@ -15,9 +15,8 @@ import utils.DBUtils;
  */
 public class PlanChecker {
 
-    /*public static void main(String args[]) throws SQLException, IOException {
-        startBackend("jdbc:sqlserver://localhost;integratedSecurity=true");
-    }*/
+    public static void main(String args[]) throws SQLException, IOException {
+    }
 
     public static void startBackend(String URL) throws SQLException, IOException {
         DBUtils.setURL(URL);

@@ -195,6 +195,9 @@ public class Operation {
         if (!Objects.equals(this.opNo, other.opNo)) {
             return false;
         }
+        if (other.orderNo == null && other.opNo == null) {
+            return false;
+        }
         return true;
     }
 }
