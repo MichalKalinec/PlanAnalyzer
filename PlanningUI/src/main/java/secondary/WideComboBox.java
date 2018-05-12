@@ -1,4 +1,4 @@
-package utils;
+package secondary;
 
 import javax.swing.*;
 import java.awt.*;

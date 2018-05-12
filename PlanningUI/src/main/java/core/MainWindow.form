@@ -57,7 +57,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for(int i = 2; i &lt; 13; i++) {&#xa;    insertIntoCombo(noteCategoryComboBox, new core.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for(int i = 2; i &lt; 13; i++) {&#xa;    insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>
         </Component>
@@ -220,7 +220,7 @@
             <Property name="surrendersFocusOnKeystroke" type="boolean" value="true"/>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTable(){&#xa;&#xa;    @Override&#xa;    protected JTableHeader createDefaultTableHeader() {&#xa;        return new JTableHeader(this.getColumnModel()) {&#xa;&#xa;            @Override&#xa;            public String getToolTipText(MouseEvent e) {&#xa;                if(!(opsTable.getModel() instanceof OverviewMatrixTableModel)){&#xa;                    return null;&#xa;                }&#xa;                Point p = e.getPoint();&#xa;                int index = columnModel.getColumnIndexAtX(p.x);&#xa;                int realIndex = columnModel.getColumn(index).getModelIndex();&#xa;                return NoteCategoryClass.getDescWithCat(realIndex);&#xa;            }&#xa;        };&#xa;    }&#xa;&#xa;    @Override&#xa;    public TableCellRenderer getCellRenderer(int row, int column){&#xa;        TableColumn tableColumn = getColumnModel().getColumn(column);&#xa;        TableCellRenderer renderer = tableColumn.getCellRenderer();&#xa;        if (renderer == null) {&#xa;            renderer = universalCellRenderer;&#xa;        }&#xa;        return renderer;&#xa;    }&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new javax.swing.JTable(){&#xa;&#xa;    @Override&#xa;        protected JTableHeader createDefaultTableHeader() {&#xa;        return new JTableHeader(this.getColumnModel()) {&#xa;&#xa;            @Override&#xa;        public String getToolTipText(MouseEvent e) {&#xa;                if(!(opsTable.getModel() instanceof OverviewMatrixTableModel)){&#xa;                    return null;&#xa;                }&#xa;                Point p = e.getPoint();&#xa;                int index = columnModel.getColumnIndexAtX(p.x);&#xa;                int realIndex = columnModel.getColumn(index).getModelIndex();&#xa;                return NoteCategoryClass.getDescWithCat(realIndex);&#xa;            }&#xa;        };&#xa;    }&#xa;&#xa;      @Override&#xa;        public TableCellRenderer getCellRenderer(int row, int column){&#xa;        TableColumn tableColumn = getColumnModel().getColumn(column);&#xa;        TableCellRenderer renderer = tableColumn.getCellRenderer();&#xa;        if (renderer == null) {&#xa;            renderer = universalCellRenderer;&#xa;        }&#xa;        return renderer;&#xa;    }&#xa;}"/>
           </AuxValues>
         </Component>
       </SubComponents>

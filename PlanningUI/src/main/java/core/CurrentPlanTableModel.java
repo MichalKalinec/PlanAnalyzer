@@ -11,6 +11,8 @@ import javax.swing.table.TableRowSorter;
 import static java.lang.Math.abs;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.lang.Math.abs;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  *
@@ -183,11 +185,11 @@ public class CurrentPlanTableModel extends AbstractTableModel {
                 }
                 return days + " dní";
             case 12:
-                return op.getQuantityPlan();
+                return round(op.getQuantityPlan(), 2);
             case 13:
-                return op.getQuantityReal();
+                return round(op.getQuantityReal(), 2);
             case 14:
-                return op.getQuantityTotal();
+                return round(op.getQuantityTotal(), 2);
             default:
                 throw new IllegalArgumentException("columnIndex: " + columnIndex);
         }
@@ -203,5 +205,15 @@ public class CurrentPlanTableModel extends AbstractTableModel {
 
     public void setOps(OperationsList ops) {
         this.ops = ops;
+    }
+
+    public static double round(double value, int places) {
+        if (places < 0) {
+            throw new IllegalArgumentException();
+        }
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
     }
 }

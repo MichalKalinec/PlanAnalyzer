@@ -1,6 +1,6 @@
 package core;
 
-import core.*;
+import secondary.*;
 import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -31,13 +31,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.MutableComboBoxModel;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import utils.TableColumnManager;
-import utils.WideComboBox;
+import secondary.TableColumnManager;
+import secondary.WideComboBox;
 
 /**
  *
@@ -45,7 +47,7 @@ import utils.WideComboBox;
  */
 public class MainWindow extends javax.swing.JFrame {
 
-    private TableCellRenderer universalCellRenderer = new UniversalCellRenderer();
+    private UniversalCellRenderer universalCellRenderer = new UniversalCellRenderer();
     private static TableColumnManager tcm;
     private Date min = java.sql.Date.valueOf(LocalDate.of(1900, 01, 01));
     private Date max = java.sql.Date.valueOf(LocalDate.of(2200, 01, 01));
@@ -97,7 +99,8 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             protected void done() {
                 try {
-                    fillComboBox(this.get());
+                    ordersComboBox.setModel(new SortedComboBoxModel<>(OrdersComboBoxItem.createAsList(this.get().getOperations().keySet())));
+                    ordersComboBox.setSelectedIndex(-1);
                 } catch (InterruptedException | ExecutionException ex) {
                     String msg = "Chyba pri prvotnom filtrovaní operácií.";
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
@@ -232,7 +235,7 @@ public class MainWindow extends javax.swing.JFrame {
         noteCategoryLabel.setText("Vyber druh poznámky");
 
         for(int i = 2; i < 13; i++) {
-            insertIntoCombo(noteCategoryComboBox, new core.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));
+            insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));
         }
 
         noteLabel.setText("Poznámka");
@@ -677,27 +680,6 @@ public class MainWindow extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fillComboBox(OperationsList ops) {
-        if (ops.getOperations().size() == 0) {
-            return;
-        }
-        List<String> orders = new ArrayList<>();
-        for (Operation op : ops.getOperations().keySet()) {
-            if (!orders.contains(op.getOrderNo())) {
-                orders.add(op.getOrderNo());
-                insertIntoCombo(ordersComboBox, new OrdersComboBoxItem(op.getOrderNo(), op.getItemNo(), op.getItemDescription()));
-            }
-        }
-    }
-
-    public static void insertIntoCombo(JComboBox combo, Object item) {
-        if (item == null) {
-            return;
-        }
-        MutableComboBoxModel model = (MutableComboBoxModel) combo.getModel();
-        model.insertElementAt(item, 0);
-    }
-
     //Returns new SwingWorker for searching for order.
     private SwingWorker giveOrderSeachSwingWorker(String query, AWTEvent evt) {
         ordersComboBox.setEnabled(false);
@@ -707,9 +689,6 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             protected OperationsList doInBackground() throws SQLException {
                 try {
-                    if (query.equals("")) {
-                        cancel(true);
-                    }
                     for (int i = 0; i < ordersComboBox.getItemCount(); i++) {
                         if (ordersComboBox.getItemAt(i).getItemNo().startsWith(query)) {
                             return OperationsList.searchWithItemNo(query);
@@ -783,7 +762,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_filterCurrentOpsButtonActionPerformed
 
     private void addNewNoteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addNewNoteButtonActionPerformed
-        if (!checkIfOpSelected()) {
+        if (!isOpSelected()) {
             return;
         }
         String[] options = {"Potvrdiť", "Zrušiť"};
@@ -836,6 +815,9 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_addNewNoteButtonActionPerformed
 
     private void searchWithOrderNoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchWithOrderNoButtonActionPerformed
+        if (orderNoTextField.getText().equals("")) {
+            return;
+        }
         giveOrderSeachSwingWorker(orderNoTextField.getText().toUpperCase(), evt).execute();
     }//GEN-LAST:event_searchWithOrderNoButtonActionPerformed
 
@@ -881,7 +863,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_showMatrixButtonActionPerformed
 
     private void showNoteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNoteButtonActionPerformed
-        if (!checkIfOpSelected()) {
+        if (!isOpSelected()) {
             return;
         }
         CurrentPlanTableModel model = (CurrentPlanTableModel) opsTable.getModel();
@@ -903,7 +885,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_showNoteButtonActionPerformed
 
     private void manualEndButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualEndButtonActionPerformed
-        if (!checkIfOpSelected()) {
+        if (!isOpSelected()) {
             return;
         }
         String[] options = {"Áno", "Nie", "Zrušiť"};
@@ -1018,7 +1000,7 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri prvotnom filtrovaní operácií.";
+                    String msg = "Chyba pri filtrovaní operácií.";
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
                     JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
                 } finally {
@@ -1029,7 +1011,7 @@ public class MainWindow extends javax.swing.JFrame {
         }.execute();
     }//GEN-LAST:event_showAllOrdersButtonActionPerformed
 
-    private boolean checkIfOpSelected() {
+    private boolean isOpSelected() {
         if (opsTable.getSelectedRow() == -1 || !(opsTable.getModel() instanceof CurrentPlanTableModel)) {
             JOptionPane.showMessageDialog(null, "Vyber operáciu z tabuľky.", "Chyba", JOptionPane.OK_OPTION);
             return false;
@@ -1044,11 +1026,25 @@ public class MainWindow extends javax.swing.JFrame {
         if (Arrays.asList(searchWithOrderNoButton, ordersComboBox, opsTable, orderNoTextField, showAllOrdersButton).contains(evt.getSource())) {
             tcm.hideColumn("Zákazka");
             tcm.hideColumn("Pracovisko");
+            universalCellRenderer.setThickLines(true);
+            List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+            sortKeys.add(new RowSorter.SortKey(1, SortOrder.DESCENDING));
+            sortKeys.add(new RowSorter.SortKey(3, SortOrder.ASCENDING));
+            opsTable.getRowSorter().setSortKeys(sortKeys);
         } else {
             tcm.hideColumn("Číslo položky");
+            universalCellRenderer.setThickLines(false);
         }
         opsTable.updateUI();
         resultCountLabel.setText(opL.getOperations().size() + " záznamov");
+    }
+
+    private void insertIntoCombo(JComboBox combo, Object item) {
+        if (item == null) {
+            return;
+        }
+        MutableComboBoxModel model = (MutableComboBoxModel) combo.getModel();
+        model.insertElementAt(item, 0);
     }
 
     /**

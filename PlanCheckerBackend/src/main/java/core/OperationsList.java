@@ -8,13 +8,9 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.DBUtils;
@@ -139,7 +135,8 @@ public class OperationsList {
                         + " OR (((B.mfop_planqty > F.goodinc AND C.futurePlanned IS NULL)"
                         + " OR (C.futurePlanned IS NULL AND F.goodinc IS NULL)"
                         + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc < B.mfop_planqty)"
-                        + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc IS NULL)) AND (A.manualEnd IS NULL))", conn)) {
+                        + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc IS NULL)) AND (A.manualEnd IS NULL))"
+                        + " ORDER BY A.orderno, A.opno", conn)) {
             while (r.next()) {
                 if (unfinishedOnly && r.getBoolean(16) == true) {
                     continue;

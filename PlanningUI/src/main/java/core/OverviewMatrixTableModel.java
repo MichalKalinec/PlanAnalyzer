@@ -1,5 +1,6 @@
 package core;
 
+import secondary.NoteCategoryClass;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;

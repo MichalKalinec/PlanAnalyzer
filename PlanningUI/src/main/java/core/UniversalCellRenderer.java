@@ -14,6 +14,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  * @author Michal Kalinec 444505
  */
 public class UniversalCellRenderer extends DefaultTableCellRenderer {
+    private boolean thickLines;
 
     @Override
     public Component getTableCellRendererComponent(JTable table,
@@ -26,19 +27,16 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
             }
         } else {
             CurrentPlanTableModel model = (CurrentPlanTableModel) table.getModel();
-            if (value instanceof Double) {
-                value = round((double) value, 2);
-                setValue(value);
-            }
+            Operation op = model.getOpForRow(table.convertRowIndexToModel(row));
             int font = 0;
-            if (model.getOps().getOperations().get(model.getOpForRow(row)) != null) {
+            if (model.getOps().getOperations().get(op) != null) {
                 font += Font.BOLD;
             }
-            if (model.getOpForRow(table.convertRowIndexToModel(row)).isManuallyEnded()) {
+            if (op.isManuallyEnded()) {
                 font += Font.ITALIC;
             }
             if (row > 0) {
-                if (!model.getOpForRow(table.convertRowIndexToModel(row)).getOrderNo().equals(model.getOpForRow(table.convertRowIndexToModel(row - 1)).getOrderNo())) {
+                if (!op.getItemNo().equals(model.getOpForRow(table.convertRowIndexToModel(row - 1)).getItemNo()) && thickLines) {
                     setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.BLACK));
                 }
             }
@@ -59,14 +57,8 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
             this.setBackground(Color.green);
         }
     }
-
-    public static double round(double value, int places) {
-        if (places < 0) {
-            throw new IllegalArgumentException();
-        }
-
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+    
+    public void setThickLines(boolean thickLines) {
+        this.thickLines = thickLines;
     }
 }
