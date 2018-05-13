@@ -36,6 +36,9 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
                 font += Font.ITALIC;
             }
             if (row > 0) {
+                if(op.getItemNo() == null ){
+                    return this;
+                }
                 if (!op.getItemNo().equals(model.getOpForRow(table.convertRowIndexToModel(row - 1)).getItemNo()) && thickLines) {
                     setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.BLACK));
                 }

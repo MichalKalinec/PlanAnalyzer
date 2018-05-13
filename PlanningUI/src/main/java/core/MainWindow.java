@@ -86,11 +86,7 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             protected OperationsList doInBackground() throws SQLException {
                 try {
-                    List<String> allDelstores = new ArrayList<>();
-                    for (int i = 0; i < workcenList.getModel().getSize(); i++) {
-                        allDelstores.add(workcenList.getModel().getElementAt(i));
-                    }
-                    return OperationsList.filterCurrentOps(allDelstores, min, max, false, false);
+                    return OperationsList.showAllOps();
                 } catch (SQLException ex) {
                     throw new SQLException(ex);
                 }
@@ -985,11 +981,7 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             protected OperationsList doInBackground() throws SQLException {
                 try {
-                    List<String> allDelstores = new ArrayList<>();
-                    for (int i = 0; i < workcenList.getModel().getSize(); i++) {
-                        allDelstores.add(workcenList.getModel().getElementAt(i));
-                    }
-                    return OperationsList.filterCurrentOps(allDelstores, min, max, false, false);
+                    return OperationsList.showAllOps();
                 } catch (SQLException ex) {
                     throw new SQLException(ex);
                 }
@@ -1027,10 +1019,6 @@ public class MainWindow extends javax.swing.JFrame {
             tcm.hideColumn("Zákazka");
             tcm.hideColumn("Pracovisko");
             universalCellRenderer.setThickLines(true);
-            List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-            sortKeys.add(new RowSorter.SortKey(1, SortOrder.DESCENDING));
-            sortKeys.add(new RowSorter.SortKey(3, SortOrder.ASCENDING));
-            opsTable.getRowSorter().setSortKeys(sortKeys);
         } else {
             tcm.hideColumn("Číslo položky");
             universalCellRenderer.setThickLines(false);

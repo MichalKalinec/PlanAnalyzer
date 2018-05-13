@@ -44,6 +44,14 @@ public class CurrentPlanTableModel extends AbstractTableModel {
                 return v1.compareTo(v2);
             }
         });
+        sorter.setComparator(3, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                Integer v1 = Integer.parseInt(o1.replaceAll("\\s+",""));
+                Integer v2 = Integer.parseInt(o2.replaceAll("\\s+",""));
+                return v1.compareTo(v2);
+            }
+        });
         table.setRowSorter(sorter);
     }
 

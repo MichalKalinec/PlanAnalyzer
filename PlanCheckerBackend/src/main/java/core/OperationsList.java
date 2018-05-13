@@ -54,76 +54,6 @@ public class OperationsList {
         this.operations = new LinkedHashMap<>();
     }
 
-    public static OperationsList showRescheduled(Date from, Date to) throws SQLException {
-        OperationsList filtered = new OperationsList();
-        try (Connection conn = DBUtils.connect();
-                ResultSet r = DBUtils.executeQuery(BASIC_SQL
-                        + " WHERE A.endOriginal != A.endLatest"
-                        + " AND ((A.endOriginal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
-                        + " OR (F.startreal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
-                        + " OR (A.endLatest BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
-                        + " OR (F.endreal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "'))", conn)) {
-            while (r.next()) {
-                filtered.createOp(r);
-            }
-        } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní preplánovaných operácií.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
-        }
-        return filtered;
-    }
-
-    public static OperationsList searchWithOrderNo(String orderNo) throws SQLException {
-        OperationsList filtered = new OperationsList();
-        orderNo = orderNo
-                    .replace("!", "!!")
-                    .replace("%", "!%")
-                    .replace("_", "!_")
-                    .replace("[", "![");
-        try (Connection conn = DBUtils.connect();
-                PreparedStatement st = conn.prepareStatement(BASIC_SQL
-                        + " WHERE A.orderNo LIKE ? ESCAPE '!'"
-                        + " ORDER BY A.orderNo, A.opNo")) {
-            st.setString(1, "%" + orderNo + "%");
-            try (ResultSet r = st.executeQuery()) {
-                while (r.next()) {
-                    filtered.createOp(r);
-                }
-            }
-        } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
-        }
-        return filtered;
-    }
-    
-    public static OperationsList searchWithItemNo(String itemNo) throws SQLException {
-        OperationsList filtered = new OperationsList();
-        itemNo = itemNo
-                    .replace("!", "!!")
-                    .replace("%", "!%")
-                    .replace("_", "!_")
-                    .replace("[", "![");
-        try (Connection conn = DBUtils.connect();
-                PreparedStatement st = conn.prepareStatement(BASIC_SQL
-                        + " WHERE B.mford_item LIKE ? ESCAPE '!'"
-                        + " ORDER BY B.mford_item, A.opNo")) {
-            st.setString(1, "%" + itemNo + "%");
-            try (ResultSet r = st.executeQuery()) {
-                while (r.next()) {
-                    filtered.createOp(r);
-                }
-            }
-        } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
-        }
-        return filtered;
-    }
-
     public static OperationsList filterCurrentOps(List<String> workcens, Date from, Date to, boolean unfinishedOnly, boolean lateOnly) throws SQLException {
         OperationsList filtered = new OperationsList();
         try (Connection conn = DBUtils.connect();
@@ -163,6 +93,92 @@ public class OperationsList {
             throw new SQLException(msg, ex);
         }
         return filtered;
+    }
+
+    public static OperationsList showRescheduled(Date from, Date to) throws SQLException {
+        OperationsList filtered = new OperationsList();
+        try (Connection conn = DBUtils.connect();
+                ResultSet r = DBUtils.executeQuery(BASIC_SQL
+                        + " WHERE A.endOriginal != A.endLatest"
+                        + " AND ((A.endOriginal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
+                        + " OR (F.startreal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
+                        + " OR (A.endLatest BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "')"
+                        + " OR (F.endreal BETWEEN '" + formatter.format(from) + "' AND '" + formatter.format(to) + "'))", conn)) {
+            while (r.next()) {
+                filtered.createOp(r);
+            }
+        } catch (SQLException ex) {
+            String msg = "Chyba pri filtrovaní preplánovaných operácií.";
+            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
+            throw new SQLException(msg, ex);
+        }
+        return filtered;
+    }
+
+    public static OperationsList searchWithOrderNo(String orderNo) throws SQLException {
+        OperationsList filtered = new OperationsList();
+        orderNo = orderNo
+                    .replace("!", "!!")
+                    .replace("%", "!%")
+                    .replace("_", "!_")
+                    .replace("[", "![");
+        try (Connection conn = DBUtils.connect();
+                PreparedStatement st = conn.prepareStatement(BASIC_SQL
+                        + " WHERE A.orderNo LIKE ? ESCAPE '!'"
+                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC")) {
+            st.setString(1, "%" + orderNo + "%");
+            try (ResultSet r = st.executeQuery()) {
+                while (r.next()) {
+                    filtered.createOp(r);
+                }
+            }
+        } catch (SQLException ex) {
+            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
+            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
+            throw new SQLException(msg, ex);
+        }
+        return filtered;
+    }
+    
+    public static OperationsList searchWithItemNo(String itemNo) throws SQLException {
+        OperationsList filtered = new OperationsList();
+        itemNo = itemNo
+                    .replace("!", "!!")
+                    .replace("%", "!%")
+                    .replace("_", "!_")
+                    .replace("[", "![");
+        try (Connection conn = DBUtils.connect();
+                PreparedStatement st = conn.prepareStatement(BASIC_SQL
+                        + " WHERE B.mford_item LIKE ? ESCAPE '!'"
+                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC")) {
+            st.setString(1, "%" + itemNo + "%");
+            try (ResultSet r = st.executeQuery()) {
+                while (r.next()) {
+                    filtered.createOp(r);
+                }
+            }
+        } catch (SQLException ex) {
+            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
+            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
+            throw new SQLException(msg, ex);
+        }
+        return filtered;
+    }
+    
+    public static OperationsList showAllOps() throws SQLException {
+        OperationsList result = new OperationsList();
+        try (Connection conn = DBUtils.connect();
+                ResultSet r = DBUtils.executeQuery(BASIC_SQL
+                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC", conn)) {
+            while (r.next()) {
+                result.createOp(r);
+            }
+        } catch (SQLException ex) {
+            String msg = "Chyba pri zobrazovaní všetkých operácií.";
+            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
+            throw new SQLException(msg, ex);
+        }
+        return result;
     }
 
     /**
