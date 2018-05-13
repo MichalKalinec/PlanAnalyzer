@@ -1,2 +1,7 @@
-*.gif
-*.properties
+/*
+/*/
+!/pom.xml
+!/PlanCheckerBackend/pom.xml
+!/PlanningUI/pom.xml
+!/PlanningUI/src/
+!/PlanCheckerBackend/src/
