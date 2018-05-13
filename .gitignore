@@ -1,7 +1,7 @@
 /*
 /*/
 !/pom.xml
-!/PlanCheckerBackend/pom.xml
-!/PlanningUI/pom.xml
+!/PlanCheckerBackend/*.xml
+!/PlanningUI/*.xml
 !/PlanningUI/src/
 !/PlanCheckerBackend/src/

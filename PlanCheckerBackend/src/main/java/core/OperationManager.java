@@ -1,16 +1,9 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package core;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import utils.DBUtils;
 
 /**
@@ -30,8 +23,7 @@ public class OperationManager {
             st.setString(4, note.getText());
             st.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(OperationManager.class.getName()).log(Level.SEVERE, null, ex);
-            throw new SQLException("Chyba pri vkladani poznamky", ex);
+            throw new SQLException("Chyba pri vkladaní poznámky.", ex);
         }
     }
     
@@ -44,8 +36,7 @@ public class OperationManager {
             st.setString(2, op.getOpNo());
             st.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(OperationManager.class.getName()).log(Level.SEVERE, null, ex);
-            throw new SQLException("Chyba pri rucnom ukonceni operacie", ex);
+            throw new SQLException("Chyba pri ručnom ukončení operácie.", ex);
         }
     }
 }

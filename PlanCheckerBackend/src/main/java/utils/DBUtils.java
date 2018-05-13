@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class for executing SQL scripts.
@@ -33,9 +31,7 @@ public class DBUtils {
             Connection connection = DriverManager.getConnection(URL);
             return connection;
         } catch (SQLException ex) {
-            String msg = "Chyba pri pripájaní do databázy.";
-            Logger.getLogger(DBUtils.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri pripájaní do databázy.", ex);
         }
     }
 
@@ -44,9 +40,7 @@ public class DBUtils {
             PreparedStatement statement = conn.prepareStatement(sql);
             return statement.executeQuery();
         } catch (SQLException ex) {
-            String msg = "Chyba pri vykonávaní SQL skriptu. ";
-            Logger.getLogger(DBUtils.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg + sql, ex);
+            throw new SQLException("Chyba pri vykonávaní SQL skriptu. " + System.lineSeparator() + sql, ex);
         }
     }
 
@@ -84,8 +78,7 @@ public class DBUtils {
             }
             return result;
         } catch (SQLException ex) {
-            Logger.getLogger(DBUtils.class.getName()).log(Level.SEVERE, null, ex);
-            throw new SQLException(ex);
+            throw new SQLException("Chyba pri sčítavaní poznámok", ex);
         }
     }
 

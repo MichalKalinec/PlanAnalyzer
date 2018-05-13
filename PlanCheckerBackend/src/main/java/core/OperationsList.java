@@ -11,8 +11,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import utils.DBUtils;
 
 /**
@@ -88,9 +86,7 @@ public class OperationsList {
                 }
             }
         } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní operácií podľa stredisiek.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri filtrovaní operácií podľa stredisiek.", ex);
         }
         return filtered;
     }
@@ -108,9 +104,7 @@ public class OperationsList {
                 filtered.createOp(r);
             }
         } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní preplánovaných operácií.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri filtrovaní preplánovaných operácií.", ex);
         }
         return filtered;
     }
@@ -133,9 +127,7 @@ public class OperationsList {
                 }
             }
         } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri filtrovaní operácií podľa zákazky. (W)", ex);
         }
         return filtered;
     }
@@ -158,9 +150,7 @@ public class OperationsList {
                 }
             }
         } catch (SQLException ex) {
-            String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri filtrovaní operácií podľa zákazky. (ČP)", ex);
         }
         return filtered;
     }
@@ -174,9 +164,7 @@ public class OperationsList {
                 result.createOp(r);
             }
         } catch (SQLException ex) {
-            String msg = "Chyba pri zobrazovaní všetkých operácií.";
-            Logger.getLogger(OperationsList.class.getName()).log(Level.SEVERE, msg, ex);
-            throw new SQLException(msg, ex);
+            throw new SQLException("Chyba pri zobrazovaní všetkých operácií.", ex);
         }
         return result;
     }

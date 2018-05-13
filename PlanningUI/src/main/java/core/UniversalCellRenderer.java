@@ -3,8 +3,6 @@ package core;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;

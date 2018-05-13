@@ -16,10 +16,8 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -31,17 +29,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.slf4j.LoggerFactory;
 import secondary.TableColumnManager;
 import secondary.WideComboBox;
 
 /**
+ * Main UI class
  *
  * @author Michal Kalinec 444505
  */
@@ -51,6 +49,7 @@ public class MainWindow extends javax.swing.JFrame {
     private static TableColumnManager tcm;
     private Date min = java.sql.Date.valueOf(LocalDate.of(1900, 01, 01));
     private Date max = java.sql.Date.valueOf(LocalDate.of(2200, 01, 01));
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 
     /**
      * Creates new form MainWindow
@@ -66,13 +65,13 @@ public class MainWindow extends javax.swing.JFrame {
             prop.load(input);
         } catch (IOException ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Chyba pri načítavaní config súboru.");
+            JOptionPane.showMessageDialog(null, "Chyba pri načítavaní config súboru.", "Chyba", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
         try {
             PlanChecker.startBackend(prop.getProperty("URL"));
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex, "Chyba", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, ex, "Chyba pri spúšťaní backendu.", JOptionPane.ERROR_MESSAGE);
         }
 
         initComponents();
@@ -85,11 +84,7 @@ public class MainWindow extends javax.swing.JFrame {
         new SwingWorker<OperationsList, Void>() {
             @Override
             protected OperationsList doInBackground() throws SQLException {
-                try {
-                    return OperationsList.showAllOps();
-                } catch (SQLException ex) {
-                    throw new SQLException(ex);
-                }
+                return OperationsList.showAllOps();
             }
 
             @Override
@@ -98,9 +93,7 @@ public class MainWindow extends javax.swing.JFrame {
                     ordersComboBox.setModel(new SortedComboBoxModel<>(OrdersComboBoxItem.createAsList(this.get().getOperations().keySet())));
                     ordersComboBox.setSelectedIndex(-1);
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri prvotnom filtrovaní operácií.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
+                    logAndNotice(ex);
                 }
             }
         }.execute();
@@ -230,7 +223,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         noteCategoryLabel.setText("Vyber druh poznámky");
 
-        for(int i = 2; i < 13; i++) {
+        for(int i = 1; i <= 12; i++) {
             insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));
         }
 
@@ -676,66 +669,19 @@ public class MainWindow extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    //Returns new SwingWorker for searching for order.
-    private SwingWorker giveOrderSeachSwingWorker(String query, AWTEvent evt) {
-        ordersComboBox.setEnabled(false);
-        searchWithOrderNoButton.setEnabled(false);
-        loadingLabel.setVisible(true);
-        return new SwingWorker<OperationsList, Void>() {
-            @Override
-            protected OperationsList doInBackground() throws SQLException {
-                try {
-                    for (int i = 0; i < ordersComboBox.getItemCount(); i++) {
-                        if (ordersComboBox.getItemAt(i).getItemNo().startsWith(query)) {
-                            return OperationsList.searchWithItemNo(query);
-                        }
-                    }
-                    return OperationsList.searchWithOrderNo(query);
-                } catch (SQLException ex) {
-                    String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
-                    cancel(true);
-                    return null;
-                }
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    if (this.isCancelled()) {
-                        return;
-                    }
-                    fillTableWithOperations(this.get(), evt);
-                } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri filtrovaní operácií podľa zákazky.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    loadingLabel.setVisible(false);
-                    ordersComboBox.setEnabled(true);
-                    searchWithOrderNoButton.setEnabled(true);
-                }
-            }
-        };
-    }
-
     private void filterCurrentOpsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterCurrentOpsButtonActionPerformed
         loadingLabel.setVisible(true);
         filterCurrentOpsButton.setEnabled(false);
         new SwingWorker<OperationsList, Void>() {
             @Override
             protected OperationsList doInBackground() throws SQLException {
-                try {
-                    DatePair dates = new DatePair();
-                    if (!dates.checkDates(fromDatePicker.getDate(), toDatePicker.getDate(), allTimeCheckBox.isSelected())) {
-                        this.cancel(true);
-                    }
-                    return OperationsList.filterCurrentOps(workcenList.getSelectedValuesList(), dates.getFrom(), dates.getTo(), unfinishedOnlyCheckBox.isSelected(),
-                            lateOnlyCheckBox.isSelected());
-                } catch (SQLException ex) {
-                    throw new SQLException(ex);
+                DatePair dates = new DatePair();
+                if (!dates.checkDates(fromDatePicker.getDate(), toDatePicker.getDate(), allTimeCheckBox.isSelected())) {
+                    JOptionPane.showMessageDialog(null, "Zle zadaný dátum.", "Upozornenie", JOptionPane.WARNING_MESSAGE);
+                    this.cancel(true);
                 }
+                return OperationsList.filterCurrentOps(workcenList.getSelectedValuesList(), dates.getFrom(), dates.getTo(),
+                        unfinishedOnlyCheckBox.isSelected(), lateOnlyCheckBox.isSelected());
             }
 
             @Override
@@ -746,9 +692,7 @@ public class MainWindow extends javax.swing.JFrame {
                     }
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri filtrovaní operácií podľa stredisiek.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
+                    logAndNotice(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                     filterCurrentOpsButton.setEnabled(true);
@@ -772,41 +716,28 @@ public class MainWindow extends javax.swing.JFrame {
             loadingLabel.setVisible(true);
             new SwingWorker<NoteCategoryClass, Void>() {
                 @Override
-                protected NoteCategoryClass doInBackground() throws SQLException, InterruptedException {
-                    try {
-                        NoteCategoryClass selectedCat = (NoteCategoryClass) noteCategoryComboBox.getSelectedItem();
-                        OperationManager.insertNoteInfo(tableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())),
-                                (new Note(selectedCat.getCategory(), noteTextArea.getText())));
-                        return selectedCat;
-                    } catch (SQLException ex) {
-                        String msg = "Chyba pri pridávaní poznámky.";
-                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                        JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
-                    }
-                    return null;
+                protected NoteCategoryClass doInBackground() throws SQLException {
+                    NoteCategoryClass selectedCat = (NoteCategoryClass) noteCategoryComboBox.getSelectedItem();
+                    OperationManager.insertNoteInfo(tableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())),
+                            (new Note(selectedCat.getCategory(), noteTextArea.getText())));
+                    return selectedCat;
                 }
 
                 @Override
                 protected void done() {
                     try {
-                        if (this.get().getCategory() == 1) {
-                            noteCategoryComboBox.removeItem(this.get());
-                        }
-                        noteCategoryComboBox.setSelectedIndex(-1);
-                        noteTextArea.setText("");
-                        loadingLabel.setVisible(false);
+                        get();
                         JOptionPane.showMessageDialog(null, "Úspešne pridané.", "", JOptionPane.INFORMATION_MESSAGE);
                     } catch (InterruptedException | ExecutionException ex) {
-                        String msg = "Chyba pri pridavani poznamky.";
-                        Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                        JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
-
+                        logAndNotice(ex);
+                    } finally {
+                        clearDelayPanel();
+                        loadingLabel.setVisible(false);
                     }
                 }
             }.execute();
         } else {
-            noteCategoryComboBox.setSelectedIndex(-1);
-            noteTextArea.setText("");
+            clearDelayPanel();
         }
     }//GEN-LAST:event_addNewNoteButtonActionPerformed
 
@@ -831,11 +762,7 @@ public class MainWindow extends javax.swing.JFrame {
         new SwingWorker<OverviewMatrixTableModel, Void>() {
             @Override
             protected OverviewMatrixTableModel doInBackground() throws SQLException {
-                try {
-                    return new OverviewMatrixTableModel(notEmptyOnlyCheckBox.isSelected());
-                } catch (SQLException ex) {
-                    throw new SQLException(ex);
-                }
+                return new OverviewMatrixTableModel(notEmptyOnlyCheckBox.isSelected());
             }
 
             @Override
@@ -846,9 +773,7 @@ public class MainWindow extends javax.swing.JFrame {
                     model.resize(opsTable);
                     opsTable.updateUI();
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri zobrazovaní matice.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
+                    logAndNotice(ex);
                 } finally {
                     showMatrixButton.setEnabled(true);
                     loadingLabel.setVisible(false);
@@ -890,31 +815,30 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         if (result == 0) {
-            NoteCategoryClass tmp = new NoteCategoryClass(1, NoteCategoryClass.getDescWithCat(1));
-            insertIntoCombo(noteCategoryComboBox, tmp);
             noteCategoryComboBox.setSelectedIndex(0);
             noteCategoryComboBox.setEnabled(false);
             noteTextArea.setText(LocalDate.now().toString() + " - ");
             addNewNoteButtonActionPerformed(evt);
             noteCategoryComboBox.setEnabled(true);
         }
+        loadingLabel.setVisible(true);
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws SQLException {
-                try {
-                    CurrentPlanTableModel model = (CurrentPlanTableModel) opsTable.getModel();
-                    OperationManager.manualEndOp(model.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())));
-                    return null;
-                } catch (SQLException ex) {
-                    String msg = "Chyba pri ukoncovani operácií.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    throw new SQLException(msg, ex);
-                }
+                OperationManager.manualEndOp(((CurrentPlanTableModel) opsTable.getModel()).getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())));
+                return null;
             }
 
             @Override
             protected void done() {
-                JOptionPane.showMessageDialog(null, "Operácia úspešne ukončená.", "", JOptionPane.INFORMATION_MESSAGE);
+                try {
+                    get();
+                    JOptionPane.showMessageDialog(null, "Operácia úspešne ukončená.", "", JOptionPane.INFORMATION_MESSAGE);
+                } catch (ExecutionException | InterruptedException ex) {
+                    logAndNotice(ex);
+                } finally {
+                    loadingLabel.setVisible(false);
+                }
             }
         }.execute();
     }//GEN-LAST:event_manualEndButtonActionPerformed
@@ -930,17 +854,12 @@ public class MainWindow extends javax.swing.JFrame {
         new SwingWorker<OperationsList, Void>() {
             @Override
             protected OperationsList doInBackground() throws SQLException {
-                try {
-                    DatePair dates = new DatePair();
-                    if (!dates.checkDates(fromDatePickerR.getDate(), toDatePickerR.getDate(), allTimeCheckBoxR.isSelected())) {
-                        this.cancel(true);
-                    }
-                    return OperationsList.showRescheduled(dates.getFrom(), dates.getTo());
-                } catch (SQLException ex) {
-                    String msg = "Chyba pri filtrovaní preplánovaných operácií.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    throw new SQLException(msg, ex);
+                DatePair dates = new DatePair();
+                if (!dates.checkDates(fromDatePickerR.getDate(), toDatePickerR.getDate(), allTimeCheckBoxR.isSelected())) {
+                    JOptionPane.showMessageDialog(null, "Zle zadaný dátum.", "Upozornenie", JOptionPane.WARNING_MESSAGE);
+                    this.cancel(true);
                 }
+                return OperationsList.showRescheduled(dates.getFrom(), dates.getTo());
             }
 
             @Override
@@ -951,9 +870,7 @@ public class MainWindow extends javax.swing.JFrame {
                     }
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri filtrovaní preplánovaných operácií.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
+                    logAndNotice(ex);
                 } finally {
                     showRescheduledButton.setEnabled(true);
                     loadingLabel.setVisible(false);
@@ -980,11 +897,7 @@ public class MainWindow extends javax.swing.JFrame {
         new SwingWorker<OperationsList, Void>() {
             @Override
             protected OperationsList doInBackground() throws SQLException {
-                try {
-                    return OperationsList.showAllOps();
-                } catch (SQLException ex) {
-                    throw new SQLException(ex);
-                }
+                return OperationsList.showAllOps();
             }
 
             @Override
@@ -992,9 +905,7 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    String msg = "Chyba pri filtrovaní operácií.";
-                    Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, msg, ex);
-                    JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
+                    logAndNotice(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                     showAllOrdersButton.setEnabled(true);
@@ -1003,6 +914,37 @@ public class MainWindow extends javax.swing.JFrame {
         }.execute();
     }//GEN-LAST:event_showAllOrdersButtonActionPerformed
 
+    //Returns new SwingWorker for searching for order.
+    private SwingWorker giveOrderSeachSwingWorker(String query, AWTEvent evt) {
+        ordersComboBox.setEnabled(false);
+        searchWithOrderNoButton.setEnabled(false);
+        loadingLabel.setVisible(true);
+        return new SwingWorker<OperationsList, Void>() {
+            @Override
+            protected OperationsList doInBackground() throws SQLException {
+                for (int i = 0; i < ordersComboBox.getItemCount(); i++) {
+                    if (ordersComboBox.getItemAt(i).getItemNo().startsWith(query)) {
+                        return OperationsList.searchWithItemNo(query);
+                    }
+                }
+                return OperationsList.searchWithOrderNo(query);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    fillTableWithOperations(this.get(), evt);
+                } catch (InterruptedException | ExecutionException ex) {
+                    logAndNotice(ex);
+                } finally {
+                    loadingLabel.setVisible(false);
+                    ordersComboBox.setEnabled(true);
+                    searchWithOrderNoButton.setEnabled(true);
+                }
+            }
+        };
+    }
+    
     private boolean isOpSelected() {
         if (opsTable.getSelectedRow() == -1 || !(opsTable.getModel() instanceof CurrentPlanTableModel)) {
             JOptionPane.showMessageDialog(null, "Vyber operáciu z tabuľky.", "Chyba", JOptionPane.OK_OPTION);
@@ -1032,7 +974,18 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         MutableComboBoxModel model = (MutableComboBoxModel) combo.getModel();
-        model.insertElementAt(item, 0);
+        model.addElement(item);
+        model.setSelectedItem(null);
+    }
+
+    private void logAndNotice(Exception ex) {
+        LOG.error(ex.getMessage(), ex);
+        JOptionPane.showMessageDialog(null, ex.getMessage(), "Chyba", JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void clearDelayPanel() {
+        noteCategoryComboBox.setSelectedIndex(-1);
+        noteTextArea.setText("");
     }
 
     /**
@@ -1065,7 +1018,6 @@ public class MainWindow extends javax.swing.JFrame {
             public void run() {
                 try {
                     new MainWindow().setVisible(true);
-
                 } catch (SQLException | IOException ex) {
                     Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -1090,7 +1042,6 @@ public class MainWindow extends javax.swing.JFrame {
                 return true;
             }
             if (from.before(min) || from.after(max) || to.before(min) || to.after(max) || to.before(from)) {
-                JOptionPane.showMessageDialog(null, "Zle zadaný dátum.", "Upozornenie", JOptionPane.WARNING_MESSAGE);
                 return false;
             }
             this.from = from;

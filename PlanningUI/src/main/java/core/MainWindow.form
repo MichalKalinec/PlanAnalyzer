@@ -57,7 +57,7 @@
             </Property>
           </Properties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for(int i = 2; i &lt; 13; i++) {&#xa;    insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="for(int i = 1; i &lt;= 12; i++) {&#xa;    insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));&#xa;}"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>
         </Component>
