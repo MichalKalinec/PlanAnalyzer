@@ -1,6 +1,5 @@
 package core;
 
-import core.*;
 import java.time.LocalDate;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.JTable;

@@ -64,8 +64,9 @@ public class MainWindow extends javax.swing.JFrame {
         try (InputStream input = new FileInputStream("config.properties")) {
             prop.load(input);
         } catch (IOException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Chyba pri načítavaní config súboru.", "Chyba", JOptionPane.ERROR_MESSAGE);
+            String msg = "Chyba pri načítavaní config súboru.";
+            LOG.error(msg, ex);
+            JOptionPane.showMessageDialog(null, msg, "Chyba", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
         try {
@@ -93,7 +94,7 @@ public class MainWindow extends javax.swing.JFrame {
                     ordersComboBox.setModel(new SortedComboBoxModel<>(OrdersComboBoxItem.createAsList(this.get().getOperations().keySet())));
                     ordersComboBox.setSelectedIndex(-1);
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 }
             }
         }.execute();
@@ -692,7 +693,7 @@ public class MainWindow extends javax.swing.JFrame {
                     }
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                     filterCurrentOpsButton.setEnabled(true);
@@ -729,7 +730,7 @@ public class MainWindow extends javax.swing.JFrame {
                         get();
                         JOptionPane.showMessageDialog(null, "Úspešne pridané.", "", JOptionPane.INFORMATION_MESSAGE);
                     } catch (InterruptedException | ExecutionException ex) {
-                        logAndNotice(ex);
+                        logAndNotify(ex);
                     } finally {
                         clearDelayPanel();
                         loadingLabel.setVisible(false);
@@ -773,7 +774,7 @@ public class MainWindow extends javax.swing.JFrame {
                     model.resize(opsTable);
                     opsTable.updateUI();
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 } finally {
                     showMatrixButton.setEnabled(true);
                     loadingLabel.setVisible(false);
@@ -835,7 +836,7 @@ public class MainWindow extends javax.swing.JFrame {
                     get();
                     JOptionPane.showMessageDialog(null, "Operácia úspešne ukončená.", "", JOptionPane.INFORMATION_MESSAGE);
                 } catch (ExecutionException | InterruptedException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                 }
@@ -870,7 +871,7 @@ public class MainWindow extends javax.swing.JFrame {
                     }
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 } finally {
                     showRescheduledButton.setEnabled(true);
                     loadingLabel.setVisible(false);
@@ -905,7 +906,7 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    logAndNotify(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                     showAllOrdersButton.setEnabled(true);
@@ -935,7 +936,8 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    logAndNotice(ex);
+                    System.err.println(ex.getLocalizedMessage());
+                    logAndNotify(ex);
                 } finally {
                     loadingLabel.setVisible(false);
                     ordersComboBox.setEnabled(true);
@@ -978,7 +980,7 @@ public class MainWindow extends javax.swing.JFrame {
         model.setSelectedItem(null);
     }
 
-    private void logAndNotice(Exception ex) {
+    private void logAndNotify(Exception ex) {
         LOG.error(ex.getMessage(), ex);
         JOptionPane.showMessageDialog(null, ex.getMessage(), "Chyba", JOptionPane.ERROR_MESSAGE);
     }

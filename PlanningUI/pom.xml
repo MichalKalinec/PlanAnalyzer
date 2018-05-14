@@ -57,7 +57,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>thesis.planningui.MainWindow</mainClass>
+                            <mainClass>core.MainWindow</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

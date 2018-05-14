@@ -23,7 +23,6 @@ public class DBUtils {
     /**
      * Estabilish and return connection with DB.
      *
-     * @param url
      * @return
      */
     public static Connection connect() throws SQLException {
