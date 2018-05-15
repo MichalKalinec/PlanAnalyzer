@@ -118,8 +118,8 @@ public class OperationsList {
                     .replace("[", "![");
         try (Connection conn = DBUtils.connect();
                 PreparedStatement st = conn.prepareStatement(BASIC_SQL
-                        + " WHERE A.orderNo LIKE ? ESCAPE '!'"
-                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC")) {
+                        + " WHERE A.orderno LIKE ? ESCAPE '!'"
+                        + " ORDER BY B.mford_item DESC, A.orderno DESC, A.opno ASC")) {
             st.setString(1, "%" + orderNo + "%");
             try (ResultSet r = st.executeQuery()) {
                 while (r.next()) {
@@ -142,7 +142,7 @@ public class OperationsList {
         try (Connection conn = DBUtils.connect();
                 PreparedStatement st = conn.prepareStatement(BASIC_SQL
                         + " WHERE B.mford_item LIKE ? ESCAPE '!'"
-                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC")) {
+                        + " ORDER BY B.mford_item DESC, A.orderno DESC, A.opno ASC")) {
             st.setString(1, "%" + itemNo + "%");
             try (ResultSet r = st.executeQuery()) {
                 while (r.next()) {
@@ -159,7 +159,7 @@ public class OperationsList {
         OperationsList result = new OperationsList();
         try (Connection conn = DBUtils.connect();
                 ResultSet r = DBUtils.executeQuery(BASIC_SQL
-                        + " ORDER BY B.mford_item DESC, A.orderNo DESC, A.opNo ASC", conn)) {
+                        + " ORDER BY B.mford_item DESC, A.orderno DESC, A.opno ASC", conn)) {
             while (r.next()) {
                 result.createOp(r);
             }
