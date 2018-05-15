@@ -59,6 +59,12 @@ public class MainWindow extends javax.swing.JFrame {
      */
     public MainWindow() throws SQLException, IOException {
 
+        initComponents();
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/logo.png")));
+        setTitle("Sledovanie plánu");
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        tcm = new TableColumnManager(opsTable);
+
         //Estabilish connection to DB.
         Properties prop = new Properties();
         try (InputStream input = new FileInputStream("config.properties")) {
@@ -72,16 +78,11 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             PlanChecker.startBackend(prop.getProperty("URL"));
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex, "Chyba pri spúšťaní backendu.", JOptionPane.ERROR_MESSAGE);
+            logAndNotify(ex);
         }
 
-        initComponents();
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/logo.png")));
-        setTitle("Sledovanie plánu");
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        tcm = new TableColumnManager(opsTable);
-
         //Initial filling of combobox.
+        loadingLabel.setVisible(true);
         new SwingWorker<OperationsList, Void>() {
             @Override
             protected OperationsList doInBackground() throws SQLException {
@@ -95,6 +96,8 @@ public class MainWindow extends javax.swing.JFrame {
                     ordersComboBox.setSelectedIndex(-1);
                 } catch (InterruptedException | ExecutionException ex) {
                     logAndNotify(ex);
+                } finally {
+                    loadingLabel.setVisible(false);
                 }
             }
         }.execute();
@@ -915,6 +918,7 @@ public class MainWindow extends javax.swing.JFrame {
         }.execute();
     }//GEN-LAST:event_showAllOrdersButtonActionPerformed
 
+    //Auxiliary methods
     //Returns new SwingWorker for searching for order.
     private SwingWorker giveOrderSeachSwingWorker(String query, AWTEvent evt) {
         ordersComboBox.setEnabled(false);
@@ -936,7 +940,6 @@ public class MainWindow extends javax.swing.JFrame {
                 try {
                     fillTableWithOperations(this.get(), evt);
                 } catch (InterruptedException | ExecutionException ex) {
-                    System.err.println(ex.getLocalizedMessage());
                     logAndNotify(ex);
                 } finally {
                     loadingLabel.setVisible(false);
@@ -946,7 +949,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         };
     }
-    
+
     private boolean isOpSelected() {
         if (opsTable.getSelectedRow() == -1 || !(opsTable.getModel() instanceof CurrentPlanTableModel)) {
             JOptionPane.showMessageDialog(null, "Vyber operáciu z tabuľky.", "Chyba", JOptionPane.OK_OPTION);
@@ -980,6 +983,7 @@ public class MainWindow extends javax.swing.JFrame {
         model.setSelectedItem(null);
     }
 
+    //Logs exception to debug.log file in the same folder as app and notifies user with dialog message.
     private void logAndNotify(Exception ex) {
         LOG.error(ex.getMessage(), ex);
         JOptionPane.showMessageDialog(null, ex.getMessage(), "Chyba", JOptionPane.ERROR_MESSAGE);
@@ -996,22 +1000,13 @@ public class MainWindow extends javax.swing.JFrame {
     public static void main(String args[]) {
         try {
             UIManager.setLookAndFeel("com.alee.laf.WebLookAndFeel");
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainWindow.class
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
 
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
-
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainWindow.class
-                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+
         //</editor-fold>
 
         /* Create and display the form */

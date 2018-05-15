@@ -3,5 +3,7 @@
 !/pom.xml
 !/PlanCheckerBackend/*.xml
 !/PlanningUI/*.xml
-!/PlanningUI/src/
+!/PlanCheckerBackend/src
+!/PlanningUI/src
 !/PlanCheckerBackend/src/
+!/PlanningUI/src/
