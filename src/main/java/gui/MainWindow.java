@@ -1,9 +1,7 @@
 package gui;
 
-import backend_core.Operation;
 import backend_core.OperationsMap;
 import backend_core.OperationManager;
-import backend_core.Note;
 import backend_core.PlanChecker;
 import secondary.*;
 import java.awt.AWTEvent;
@@ -53,9 +51,10 @@ public class MainWindow extends javax.swing.JFrame {
     private UniversalCellRenderer universalCellRenderer = new UniversalCellRenderer();
     private CurrentPlanTableModel opsTableModel = new CurrentPlanTableModel();
     private OverviewMatrixTableModel matrixTableModel = new OverviewMatrixTableModel();
+    private OperationManager operationManager = new OperationManager();
     private static TableColumnManager tcm;
-    private Date min = java.sql.Date.valueOf(LocalDate.of(1900, 01, 01));
-    private Date max = java.sql.Date.valueOf(LocalDate.of(2200, 01, 01));
+    private final Date MIN = java.sql.Date.valueOf(LocalDate.of(1900, 01, 01));
+    private final Date MAX = java.sql.Date.valueOf(LocalDate.of(2200, 01, 01));
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(MainWindow.class);
 
     /**
@@ -724,20 +723,19 @@ public class MainWindow extends javax.swing.JFrame {
                 return;
             }
             loadingLabel.setVisible(true);
-            new SwingWorker<Note, Void>() {
+            new SwingWorker<Void, Void>() {
                 @Override
-                protected Note doInBackground() throws SQLException {
+                protected Void doInBackground() throws SQLException {
                     NoteCategoryClass selectedCat = (NoteCategoryClass) noteCategoryComboBox.getSelectedItem();
-                    Note note = new Note(selectedCat.getCategory(), noteTextArea.getText());
-                    OperationManager.insertNoteInfo(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())),
-                            (note));
-                    return note;
+                    operationManager.insertNoteInfo(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())),
+                            selectedCat.getCategory(), noteTextArea.getText());
+                    return null;
                 }
 
                 @Override
                 protected void done() {
                     try {
-                        opsTableModel.getOps().getOperations().get(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()))).add(get());
+                        get();
                         JOptionPane.showMessageDialog(null, "Úspešne pridané.", "", JOptionPane.INFORMATION_MESSAGE);
                     } catch (InterruptedException | ExecutionException ex) {
                         logAndNotify(ex);
@@ -804,16 +802,7 @@ public class MainWindow extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Vybraná operácia nemá žiadnu poznámku.", "", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        String s = "";
-        for (int i = 0; i < model.getOps().getOperations().get(model.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()))).size(); i++) {
-            if (i > 0) {
-                s = s.concat("---------------------------------------------------------------------------------------------------------" + System.getProperty("line.separator"));
-            }
-            Note note = model.getOps().getOperations().get(model.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()))).get(i);
-            s = s.concat("Kategória: " + NoteCategoryClass.getDescWithCat(note.getCategory()) + "" + System.getProperty("line.separator") + System.getProperty("line.separator")
-                    + "Popis: " + note.getText() + System.getProperty("line.separator"));
-        }
-        showNoteInfoTextArea.setText(s);
+        showNoteInfoTextArea.setText(opsTableModel.getNotesSummary(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())));
         JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámke", JOptionPane.PLAIN_MESSAGE);
     }//GEN-LAST:event_showNoteButtonActionPerformed
 
@@ -834,18 +823,18 @@ public class MainWindow extends javax.swing.JFrame {
             noteCategoryComboBox.setEnabled(true);
         }
         loadingLabel.setVisible(true);
-        new SwingWorker<Operation, Void>() {
+        new SwingWorker<Integer, Void>() {
             @Override
-            protected Operation doInBackground() throws SQLException {
-                Operation op = opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()));
-                OperationManager.manuallyEndOp(op);
-                return op;
+            protected Integer doInBackground() throws SQLException {
+                int index = opsTable.convertRowIndexToModel(opsTable.getSelectedRow());
+                operationManager.manuallyEndOp(opsTableModel.getOpForRow(index));
+                return index;
             }
 
             @Override
             protected void done() {
                 try {
-                    get().setIsManuallyEnded(true);
+                    get();
                     JOptionPane.showMessageDialog(null, "Operácia úspešne ukončená.", "", JOptionPane.INFORMATION_MESSAGE);
                 } catch (ExecutionException | InterruptedException ex) {
                     logAndNotify(ex);
@@ -1048,15 +1037,15 @@ public class MainWindow extends javax.swing.JFrame {
         public DatePair() {
         }
 
-        //Sets from and to values accordingly either to parameters if valid dates are entered or to min & max if all time option is selected.
+        //Sets from and to values accordingly either to parameters if valid dates are entered or to MIN & MAX if all time option is selected.
         //Returns true if valid dates have been set.
         private boolean checkDates(Date from, Date to, boolean allTime) {
             if (allTime) {
-                this.from = min;
-                this.to = max;
+                this.from = MIN;
+                this.to = MAX;
                 return true;
             }
-            if (from.before(min) || from.after(max) || to.before(min) || to.after(max) || to.before(from)) {
+            if (from.before(MIN) || from.after(MAX) || to.before(MIN) || to.after(MAX) || to.before(from)) {
                 return false;
             }
             this.from = from;

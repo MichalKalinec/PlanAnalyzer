@@ -13,7 +13,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import static java.lang.Math.abs;
-import javax.swing.event.RowSorterListener;
+import secondary.NoteCategoryClass;
 
 /**
  *
@@ -24,10 +24,6 @@ public class CurrentPlanTableModel extends AbstractTableModel {
     private OperationsMap ops;
     
     public CurrentPlanTableModel(){};
-
-    public CurrentPlanTableModel(OperationsMap ops) {
-        this.ops = ops;
-    }
 
     public void resize(JTable table) {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -201,6 +197,22 @@ public class CurrentPlanTableModel extends AbstractTableModel {
             default:
                 throw new IllegalArgumentException("columnIndex: " + columnIndex);
         }
+    }
+    
+    public String getNotesSummary(int index) {
+        String s = "";
+        for (int i = 0; i < ops.getOperations().get(getOpForRow(index)).size(); i++) {
+            if (i > 0) {
+                s = s.concat("---------------------------------------------------------------------------------------------------------" + System.getProperty("line.separator"));
+            }
+            s = s.concat("Kategória: " + NoteCategoryClass.getDescWithCat(ops.getOperations().get(getOpForRow(index)).get(i).getCategory()) + "" + System.getProperty("line.separator") + System.getProperty("line.separator")
+                    + "Popis: " + ops.getOperations().get(getOpForRow(index)).get(i).getText() + System.getProperty("line.separator"));
+        }
+        return s;
+    }
+    
+    public void addNote(int index, int cat, String text) {
+        
     }
 
     public Operation getOpForRow(int row) {

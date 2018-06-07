@@ -23,7 +23,7 @@ public class PlanChecker {
         insertNewIntoDB();
     }
 
-    public static void insertNewIntoDB() throws SQLException {
+    private static void insertNewIntoDB() throws SQLException {
         try (Connection conn = DBUtils.connect();
                 PreparedStatement st = conn.prepareStatement("INSERT INTO AHP.dbo.u_Zmeny"
                         + " SELECT * FROM (SELECT Zakazka, Operacia, MAX(Datum) AS endLatest, MAX(Datum) AS endOriginal, NULL AS manualEnd"
@@ -38,7 +38,7 @@ public class PlanChecker {
         }
     }
 
-    public static void updateRescheduled() throws SQLException {
+    private static void updateRescheduled() throws SQLException {
         try (Connection con = DBUtils.connect();
                 PreparedStatement st = con.prepareStatement("UPDATE AHP.dbo.u_Zmeny"
                         + " SET endLatest = B.endN FROM AHP.dbo.u_Zmeny AS A JOIN (SELECT Zakazka, Operacia, MAX(Datum) AS endN"
