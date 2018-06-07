@@ -1,9 +1,4 @@
-/*
-/*/
-!/pom.xml
-!/PlanCheckerBackend/*.xml
-!/PlanningUI/*.xml
-!/PlanCheckerBackend/src
-!/PlanningUI/src
-!/PlanCheckerBackend/src/
-!/PlanningUI/src/
+!/*
+/src
+/*.xml
+/vpproject
