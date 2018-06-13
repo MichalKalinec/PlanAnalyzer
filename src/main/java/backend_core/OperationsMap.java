@@ -46,7 +46,10 @@ public class OperationsMap {
             + " AHP.dbo.u_Poznamky AS E ON A.orderno = E.orderno AND A.opno = E.opno"
             + " LEFT JOIN"
             + " (SELECT mftrn_orderno, mftrn_opno, MIN(mftrn_date) AS startreal, MAX(mftrn_date) AS endreal, SUM(mftrn_goodinc) AS goodinc"
-            + " FROM MAX2ostr.maxmast.mftrn GROUP BY mftrn_orderno, mftrn_opno) AS F ON A.orderno = F.mftrn_orderno AND A.opno = F.mftrn_opno";
+            + " FROM (SELECT mftrn_orderno, mftrn_opno, mftrn_date, mftrn_goodinc FROM MAX2ostr.maxmast.mftrn"
+            + " UNION ALL"
+            + " SELECT uvop_orderno, uvop_opno, uvop_datestrt, uvop_qtygood FROM MAX2ostr.maxmast.uvop"
+            + " WHERE uvop_status<2) AS odpisane GROUP BY mftrn_orderno, mftrn_opno) AS F ON A.orderno = F.mftrn_orderno AND A.opno = F.mftrn_opno";
 
     public OperationsMap() {
         this.operations = new LinkedHashMap<>();

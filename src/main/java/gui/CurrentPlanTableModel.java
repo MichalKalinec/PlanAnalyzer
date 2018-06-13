@@ -26,29 +26,11 @@ public class CurrentPlanTableModel extends AbstractTableModel {
     public CurrentPlanTableModel(){};
 
     public void resize(JTable table) {
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
         table.getColumnModel().getColumn(1).setPreferredWidth(200);
         table.getColumnModel().getColumn(3).setPreferredWidth(200);
 
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
-        sorter.setComparator(11, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                Integer v1 = Integer.parseInt(o1.split(" ")[0]);
-                Integer v2 = Integer.parseInt(o2.split(" ")[0]);
-                return v1.compareTo(v2);
-            }
-        });
-        sorter.setComparator(3, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                Integer v1 = Integer.parseInt(o1.replaceAll("\\s+",""));
-                Integer v2 = Integer.parseInt(o2.replaceAll("\\s+",""));
-                return v1.compareTo(v2);
-            }
-        });
-        table.setRowSorter(sorter);
+        
     }
 
     @Override

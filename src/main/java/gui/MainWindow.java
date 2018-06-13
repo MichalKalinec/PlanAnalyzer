@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -31,12 +32,15 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.slf4j.LoggerFactory;
 import secondary.TableColumnManager;
 import secondary.WideComboBox;
@@ -115,7 +119,7 @@ public class MainWindow extends javax.swing.JFrame {
                 Point point = mouseEvent.getPoint();
                 int column = opsTable.columnAtPoint(point);
                 if (mouseEvent.getClickCount() == 2 && column == 0 && opsTable.getModel() instanceof CurrentPlanTableModel) {
-                    getOrderSeachSwingWorker(opsTableModel.getOpForRow(opsTable.rowAtPoint(point)).getOrderNo(), mouseEvent).execute();
+                    getOrderSeachSwingWorker(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.rowAtPoint(point))).getOrderNo(), mouseEvent).execute();
                 }
             }
         });
@@ -716,7 +720,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         String[] options = {"Potvrdiť", "Zrušiť"};
-        if (JOptionPane.showOptionDialog(null, delayInfoPanel, "Zadaj informácie o poznámke", 0, JOptionPane.INFORMATION_MESSAGE, null, options, null) == 0) {
+        if (JOptionPane.showOptionDialog(null, delayInfoPanel, "Zadaj informácie o poznámke", 0, JOptionPane.PLAIN_MESSAGE, null, options, null) == 0) {
             if (noteCategoryComboBox.getSelectedIndex() == -1) {
                 JOptionPane.showMessageDialog(null, "Vyber kategóriu poznámky.", "Upozornenie", JOptionPane.WARNING_MESSAGE);
                 addNewNoteButtonActionPerformed(evt);
@@ -803,7 +807,7 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         showNoteInfoTextArea.setText(opsTableModel.getNotesSummary(opsTable.convertRowIndexToModel(opsTable.getSelectedRow())));
-        JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámke", JOptionPane.PLAIN_MESSAGE);
+        JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámke", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_showNoteButtonActionPerformed
 
     private void manualEndButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manualEndButtonActionPerformed
@@ -916,10 +920,7 @@ public class MainWindow extends javax.swing.JFrame {
         }.execute();
     }//GEN-LAST:event_showAllOrdersButtonActionPerformed
 
-    
     //Auxiliary methods
-    
-    
     //Returns new SwingWorker for searching for order.
     private SwingWorker getOrderSeachSwingWorker(String query, AWTEvent evt) {
         ordersComboBox.setEnabled(false);
@@ -962,21 +963,44 @@ public class MainWindow extends javax.swing.JFrame {
     private void fillTableWithOperations(OperationsMap opL, AWTEvent evt) {
         opsTableModel.setOps(opL);
         opsTable.setModel(opsTableModel);
+        tcm.hideColumn("Číslo položky");
+        tcm.hideColumn("Zákazka");
+        tcm.hideColumn("Pracovisko");
+        
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(opsTableModel);
+        sorter.setComparator(11, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                Integer v1 = Integer.parseInt(o1.split(" ")[0]);
+                Integer v2 = Integer.parseInt(o2.split(" ")[0]);
+                return v1.compareTo(v2);
+            }
+        });
+        sorter.setComparator(3, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                Integer v1 = Integer.parseInt(o1.replaceAll("\\s+",""));
+                Integer v2 = Integer.parseInt(o2.replaceAll("\\s+",""));
+                return v1.compareTo(v2);
+            }
+        });
+        opsTable.setRowSorter(sorter);
+
         if (Arrays.asList(searchWithOrderNoButton, ordersComboBox, opsTable, orderNoTextField, showAllOrdersButton).contains(evt.getSource())) {
-            tcm.hideColumn("Číslo položky");
-            tcm.hideColumn("Zákazka");
-            tcm.hideColumn("Pracovisko");
             tcm.showColumn("Číslo položky");
+            opsTable.getColumnModel().getColumn(0).setPreferredWidth(110);
+            opsTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+            opsTable.getColumnModel().getColumn(3).setPreferredWidth(200);
             universalCellRenderer.setThickLines(true);
         } else {
-            tcm.hideColumn("Číslo položky");
-            tcm.hideColumn("Zákazka");
-            tcm.hideColumn("Pracovisko");
             tcm.showColumn("Zákazka");
             tcm.showColumn("Pracovisko");
+            opsTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+            opsTable.getColumnModel().getColumn(3).setPreferredWidth(200);
+            opsTable.getColumnModel().getColumn(4).setPreferredWidth(200);
             universalCellRenderer.setThickLines(false);
         }
-        opsTableModel.resize(opsTable);
+        //opsTableModel.resize(opsTable);
         opsTable.updateUI();
         resultCountLabel.setText(opL.getOperations().size() + " záznamov");
     }
