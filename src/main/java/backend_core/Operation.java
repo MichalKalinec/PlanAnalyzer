@@ -26,10 +26,11 @@ public class Operation {
     private double quantityPlan;
     private double quantityReal;
     private double quantityTotal;
+    private double quantityRequired;
     private boolean manuallyEnded;
     
     public boolean isFinished(){
-        return quantityReal >= quantityTotal;
+        return quantityReal >= quantityRequired;
     }
 
     public LocalDateTime getEndRequired() {
@@ -102,6 +103,14 @@ public class Operation {
 
     public void setQuantityPlan(double quantityPlan) {
         this.quantityPlan = quantityPlan;
+    }
+
+    public double getQuantityRequired() {
+        return quantityRequired;
+    }
+
+    public void setQuantityRequired(double quantityRequired) {
+        this.quantityRequired = quantityRequired;
     }
 
     public String getItemDescription() {

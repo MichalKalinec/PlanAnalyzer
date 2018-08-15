@@ -21,6 +21,7 @@ public class OperationBuilder {
     private double quantityPlan;
     private double quantityReal;
     private double quantityTotal;
+    private double quantityRequired;
     private String itemDescription;
     private String opDescription;
     private boolean manuallyEnded;
@@ -109,6 +110,11 @@ public class OperationBuilder {
         return this;
     }
     
+    public OperationBuilder quantityRequired(double quantityRequired){
+        this.quantityRequired = quantityRequired;
+        return this;
+    }
+    
     public OperationBuilder manuallyEnded(boolean boo){
         this.manuallyEnded = boo;
         return this;
@@ -138,6 +144,7 @@ public class OperationBuilder {
         operation.setIsManuallyEnded(manuallyEnded);
         operation.setItemNo(itemNo);
         operation.setEndRequired(endRequired);
+        operation.setQuantityRequired(quantityRequired);
         return operation;
     }
 }

@@ -24,18 +24,18 @@ public class OperationsMap {
     private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
 
     //Mutual core of SQL scripts creating instances of Operation from DBs.
-    private static final String BASIC_SQL = "SELECT A.orderno, A.opno, A.endOriginal, B.mfop_planqty, B.rtcen_name, F.goodinc, B.imast_descext,"
-            + " B.mfop_remarks, B.mford_delstore, F.startreal, F.endreal, A.endLatest, C.futurePlanned, E.category, E.note, A.manualEnd, D.pastPlanned, B.mford_item, B.mford_duedate FROM"
+    private static final String BASIC_SQL = "SELECT A.orderno, A.opno, A.endOriginal, B.mfop_planqty, B.rtcen_name, F.goodinc, B.imast_descext, B.mfop_remarks, B.mford_delstore,"
+            + " F.startreal, F.endreal, A.endLatest, C.futurePlanned, E.category, E.note, A.manualEnd, D.pastPlanned, B.mford_item, B.mford_duedate, B.mford_dueqty FROM"
             + " (SELECT orderno, opno, endLatest, endOriginal, manualEnd FROM AHP.dbo.u_Zmeny) AS A"
             + " LEFT JOIN"
-            + " (SELECT imast_descext, mfop_remarks, mford_delstore, mfop_orderno, mfop_opno, mfop_planqty, rtcen_name, mford_item, mford_duedate FROM MAX2ostr.maxmast.mfop"
+            + " (SELECT imast_descext, mfop_remarks, mford_delstore, mfop_orderno, mfop_opno, mfop_planqty, rtcen_name, mford_item, mford_duedate, mford_dueqty FROM MAX2ostr.maxmast.mfop"
             + " JOIN"
             + " MAX2ostr.maxmast.rtcen ON mfop_workcen = rtcen_workcen"
             + " JOIN"
             + " MAX2ostr.maxmast.mford ON mford_orderno = mfop_orderno"
             + " JOIN"
             + " MAX2ostr.maxmast.imast ON imast_item = mford_item GROUP BY mfop_orderno, mfop_opno, imast_descext, mfop_remarks,"
-            + " mford_delstore, rtcen_name, mford_item, mfop_planqty, mford_duedate) AS B ON A.orderno = B.mfop_orderno AND A.opno = B.mfop_opno"
+            + " mford_delstore, rtcen_name, mford_item, mfop_planqty, mford_duedate, mford_dueqty) AS B ON A.orderno = B.mfop_orderno AND A.opno = B.mfop_opno"
             + " LEFT JOIN"
             + " (SELECT Zakazka, Operacia, SUM(Mnozstvo) AS futurePlanned"
             + " FROM AHP.dbo.fn_Plan(CURRENT_TIMESTAMP,'2200-01-01') GROUP BY Zakazka, Operacia) AS C ON C.Zakazka = A.orderno AND C.Operacia = A.opno"
@@ -72,12 +72,12 @@ public class OperationsMap {
                 if (unfinishedOnly && r.getBoolean(16) == true) {
                     continue;
                 }
-                if (Double.compare(r.getDouble(6), r.getDouble(4)) >= 0 && r.getDouble(4) != 0) {
+                if (Double.compare(r.getDouble(6), r.getDouble(20)) >= 0 && r.getDouble(4) != 0) {
                     if (unfinishedOnly || (!DBUtils.getDateTimeFromResultSet(r, 11).isAfter(DBUtils.getDateTimeFromResultSet(r, 3)) && lateOnly)) {
                         continue;
                     }
                 }
-                if (Double.compare(r.getDouble(6), (r.getDouble(4)) - r.getDouble(13)) >= 0 && lateOnly) {
+                if (Double.compare(r.getDouble(6), r.getDouble(4) - r.getDouble(13)) >= 0 && lateOnly) {
                     continue;
                 }
                 if (r.getString(9) == null) {
@@ -180,7 +180,7 @@ public class OperationsMap {
      */
     private void createOp(ResultSet r) throws SQLException {
         OperationBuilder builder = new OperationBuilder();
-        if (Double.compare(r.getDouble(6), r.getDouble(4)) >= 0) {
+        if (Double.compare(r.getDouble(6), r.getDouble(20)) >= 0) {
             builder.endReal(DBUtils.getDateTimeFromResultSet(r, 11));
         }
         Operation op = builder.orderNo(r.getString(1))
@@ -198,6 +198,7 @@ public class OperationsMap {
                 .manuallyEnded(r.getBoolean(16))
                 .itemNo(r.getString(18))
                 .endRequired(DBUtils.getDateTimeFromResultSet(r, 19))
+                .quantityRequired(r.getDouble(20))
                 .build();
         if (!operations.keySet().contains(op)) {
             operations.put(op, null);

@@ -4,6 +4,7 @@ import backend_core.Operation;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.time.LocalDateTime;
 import javax.swing.BorderFactory;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -22,7 +23,7 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
         Component parent = super.getTableCellRendererComponent(table,
                 value, isSelected, hasFocus, row, column);
         if (table.getModel() instanceof OverviewMatrixTableModel) {
-            if (row == table.getRowCount() - 1 || column == table.getColumnCount() - 1) {
+            if (table.getModel().getValueAt(table.convertRowIndexToModel(row), 0).equals("Súčet") || column == table.getColumnCount() - 1) {
                 setFont(parent.getFont().deriveFont(Font.BOLD));
             }
         } else {
@@ -49,20 +50,18 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
                     setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.BLACK));
                 }
             }
-            //setCellColor(table, row, column);
+            setCellColor(table, row, column);
         }
         return this;
     }
 
     private void setCellColor(JTable table, int row, int column) {
         CurrentPlanTableModel model = (CurrentPlanTableModel) table.getModel();
-        if (model.getOpForRow(table.convertRowIndexToModel(row)).isFinished()) {
-            this.setBackground(Color.red);
+        if (!model.getOpForRow(table.convertRowIndexToModel(row)).isFinished() &&
+                LocalDateTime.now().isAfter(model.getOpForRow(table.convertRowIndexToModel(row)).getEndRequired())) {
+            this.setBackground(new Color(200, 0, 0));
         } else {
             this.setBackground(Color.white);
-        }
-        if (model.getValueAt(row, column) instanceof Double) {
-            this.setBackground(Color.green);
         }
     }
 

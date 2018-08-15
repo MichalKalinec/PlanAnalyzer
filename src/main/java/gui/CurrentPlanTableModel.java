@@ -4,11 +4,6 @@ import backend_core.Operation;
 import backend_core.OperationsMap;
 import java.time.LocalDate;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import java.util.Comparator;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import static java.time.temporal.ChronoUnit.DAYS;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -24,14 +19,6 @@ public class CurrentPlanTableModel extends AbstractTableModel {
     private OperationsMap ops;
     
     public CurrentPlanTableModel(){};
-
-    public void resize(JTable table) {
-        table.getColumnModel().getColumn(0).setPreferredWidth(110);
-        table.getColumnModel().getColumn(1).setPreferredWidth(200);
-        table.getColumnModel().getColumn(3).setPreferredWidth(200);
-
-        
-    }
 
     @Override
     public int getColumnCount() {
@@ -187,7 +174,8 @@ public class CurrentPlanTableModel extends AbstractTableModel {
             if (i > 0) {
                 s = s.concat("---------------------------------------------------------------------------------------------------------" + System.getProperty("line.separator"));
             }
-            s = s.concat("Kategória: " + NoteCategoryClass.getDescWithCat(ops.getOperations().get(getOpForRow(index)).get(i).getCategory()) + "" + System.getProperty("line.separator") + System.getProperty("line.separator")
+            s = s.concat("Kategória: " + NoteCategoryClass.getDescWithCat(ops.getOperations().get(getOpForRow(index)).get(i).getCategory())
+                    + System.getProperty("line.separator") + System.getProperty("line.separator")
                     + "Popis: " + ops.getOperations().get(getOpForRow(index)).get(i).getText() + System.getProperty("line.separator"));
         }
         return s;

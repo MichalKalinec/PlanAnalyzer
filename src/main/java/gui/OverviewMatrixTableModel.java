@@ -1,15 +1,16 @@
 package gui;
 
+import backend_core.Note;
+import backend_core.NotesManager;
 import secondary.NoteCategoryClass;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import utils.DBUtils;
 
 /**
  *
@@ -20,14 +21,14 @@ public class OverviewMatrixTableModel extends AbstractTableModel {
     Map<String, int[]> counts;
 
     public void resize(JTable table) {
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setColumnSelectionAllowed(true);
         table.getColumnModel().getColumn(0).setPreferredWidth(200);
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
     }
     
     public void loadCounts(boolean notEmpty) throws SQLException {
-        counts = (LinkedHashMap) DBUtils.sumNotesForWorkcens(notEmpty);
+        counts = (LinkedHashMap) NotesManager.sumNotesForWorkcens(notEmpty);
     }
 
     @Override
@@ -71,7 +72,7 @@ public class OverviewMatrixTableModel extends AbstractTableModel {
             if (rowIndex == counts.size()) {
                 return "Súčet";
             }
-            return counts.keySet().toArray()[rowIndex];
+            return counts.keySet().toArray()[rowIndex] == null ? "" : counts.keySet().toArray()[rowIndex];
         }
         if (columnIndex == getColumnCount() - 1) {
             int sum = 0;
@@ -93,5 +94,19 @@ public class OverviewMatrixTableModel extends AbstractTableModel {
             return null;
         }
         return counts.get(counts.keySet().toArray()[rowIndex])[columnIndex - 1];
+    }
+    
+    public String getNotesSummary(List<List<Object>> notes) throws SQLException {
+        String s = "";
+        for (int i = 0; i < notes.size(); i++) {
+            if (i > 0) {
+                s = s.concat("---------------------------------------------------------------------------------------------------------" + System.getProperty("line.separator"));
+            }
+            s = s.concat(notes.get(i).get(0) + "; " + notes.get(i).get(1) + System.getProperty("line.separator")
+                    + "Kategória: " + NoteCategoryClass.getDescWithCat(((Note) notes.get(i).get(2)).getCategory())
+                    + System.getProperty("line.separator") + System.getProperty("line.separator")
+                    + "Popis: " + ((Note) notes.get(i).get(2)).getText() + System.getProperty("line.separator"));
+        }
+        return s;
     }
 }

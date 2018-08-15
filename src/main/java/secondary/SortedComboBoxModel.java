@@ -1,4 +1,4 @@
-package gui;
+package secondary;
 
 import java.util.Arrays;
 import java.util.Collections;

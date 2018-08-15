@@ -1,5 +1,7 @@
 package gui;
 
+import secondary.SortedComboBoxModel;
+import backend_core.NotesManager;
 import backend_core.OperationsMap;
 import backend_core.OperationManager;
 import backend_core.PlanChecker;
@@ -22,6 +24,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -117,9 +120,31 @@ public class MainWindow extends javax.swing.JFrame {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
                 Point point = mouseEvent.getPoint();
+                int row = opsTable.rowAtPoint(point);
                 int column = opsTable.columnAtPoint(point);
-                if (mouseEvent.getClickCount() == 2 && column == 0 && opsTable.getModel() instanceof CurrentPlanTableModel) {
-                    getOrderSeachSwingWorker(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(opsTable.rowAtPoint(point))).getOrderNo(), mouseEvent).execute();
+
+                if (mouseEvent.getClickCount() == 2) {
+                    if (column == 0 && opsTable.getModel() instanceof CurrentPlanTableModel) {
+                        getOrderSeachSwingWorker(opsTableModel.getOpForRow(opsTable.convertRowIndexToModel(row)).getOrderNo(), mouseEvent).execute();
+                    }
+                    if (opsTable.getModel() instanceof OverviewMatrixTableModel) {
+                        OverviewMatrixTableModel model = (OverviewMatrixTableModel) opsTable.getModel();
+                        try {
+                            List<List<Object>> notes = NotesManager.showNotesForColumn(opsTable.convertColumnIndexToModel(column));
+                            List<List<Object>> notesRow = NotesManager.showNotesForRow(model.getValueAt(opsTable.convertRowIndexToModel(row), 0).toString());
+                            if (column == opsTable.getColumnCount() - 1) {
+                                showNoteInfoTextArea.setText(model.getNotesSummary(notesRow));
+                            } else if (row == opsTable.getRowCount() - 1) {
+                                showNoteInfoTextArea.setText(model.getNotesSummary(notes));
+                            } else {
+                                notes.retainAll(NotesManager.showNotesForRow(model.getValueAt(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()), 0).toString()));
+                                showNoteInfoTextArea.setText(model.getNotesSummary(notes));
+                            }
+                            JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámkach", JOptionPane.INFORMATION_MESSAGE);
+                        } catch (SQLException ex) {
+                            logAndNotify(ex);
+                        }
+                    }
                 }
             }
         });
@@ -228,6 +253,8 @@ public class MainWindow extends javax.swing.JFrame {
         matrixPanel = new javax.swing.JPanel();
         notEmptyOnlyCheckBox = new javax.swing.JCheckBox();
         showMatrixButton = new javax.swing.JButton();
+        showNotesForColumnButton = new javax.swing.JButton();
+        showNotesForRowButton = new javax.swing.JButton();
         addNewNoteButton = new javax.swing.JButton();
         ImageIcon loading = new ImageIcon("loading.gif");
         loadingLabel = new javax.swing.JLabel(loading);
@@ -578,6 +605,20 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        showNotesForColumnButton.setText("Zobraziť poznámky pre stĺpec");
+        showNotesForColumnButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showNotesForColumnButtonActionPerformed(evt);
+            }
+        });
+
+        showNotesForRowButton.setText("Zobraziť poznámky pre riadok");
+        showNotesForRowButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showNotesForRowButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout matrixPanelLayout = new javax.swing.GroupLayout(matrixPanel);
         matrixPanel.setLayout(matrixPanelLayout);
         matrixPanelLayout.setHorizontalGroup(
@@ -585,12 +626,18 @@ public class MainWindow extends javax.swing.JFrame {
             .addGroup(matrixPanelLayout.createSequentialGroup()
                 .addGroup(matrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(matrixPanelLayout.createSequentialGroup()
-                        .addGap(73, 73, 73)
-                        .addComponent(showMatrixButton, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(matrixPanelLayout.createSequentialGroup()
                         .addGap(88, 88, 88)
-                        .addComponent(notEmptyOnlyCheckBox)))
-                .addContainerGap(85, Short.MAX_VALUE))
+                        .addComponent(notEmptyOnlyCheckBox))
+                    .addGroup(matrixPanelLayout.createSequentialGroup()
+                        .addGap(73, 73, 73)
+                        .addComponent(showMatrixButton, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, matrixPanelLayout.createSequentialGroup()
+                .addGap(0, 46, Short.MAX_VALUE)
+                .addGroup(matrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(showNotesForColumnButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(showNotesForRowButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(45, 45, 45))
         );
         matrixPanelLayout.setVerticalGroup(
             matrixPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -599,7 +646,11 @@ public class MainWindow extends javax.swing.JFrame {
                 .addComponent(notEmptyOnlyCheckBox)
                 .addGap(53, 53, 53)
                 .addComponent(showMatrixButton, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(256, Short.MAX_VALUE))
+                .addGap(31, 31, 31)
+                .addComponent(showNotesForColumnButton, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(31, 31, 31)
+                .addComponent(showNotesForRowButton, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(104, Short.MAX_VALUE))
         );
 
         controlPane.addTab("Matica problémov", matrixPanel);
@@ -920,6 +971,35 @@ public class MainWindow extends javax.swing.JFrame {
         }.execute();
     }//GEN-LAST:event_showAllOrdersButtonActionPerformed
 
+    private void showNotesForColumnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNotesForColumnButtonActionPerformed
+        try {
+            if (!(opsTable.getModel() instanceof OverviewMatrixTableModel) || opsTable.getSelectedColumn() < 1 || opsTable.getSelectedColumn() > 12) {
+                JOptionPane.showMessageDialog(null, "Zle vybraná bunka tabuľky", "Upozornenie", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            OverviewMatrixTableModel model = (OverviewMatrixTableModel) opsTable.getModel();
+            showNoteInfoTextArea.setText(model.getNotesSummary(NotesManager.showNotesForColumn(opsTable.convertColumnIndexToModel(opsTable.getSelectedColumn()))));
+            JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámkach", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            logAndNotify(ex);
+        }
+    }//GEN-LAST:event_showNotesForColumnButtonActionPerformed
+
+    private void showNotesForRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNotesForRowButtonActionPerformed
+        try {
+            if (!(opsTable.getModel() instanceof OverviewMatrixTableModel) || opsTable.getSelectedRow() < 0 || opsTable.getSelectedRow() >= opsTable.getRowCount() - 1) {
+                JOptionPane.showMessageDialog(null, "Zle vybraná bunka tabuľky", "Upozornenie", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            OverviewMatrixTableModel model = (OverviewMatrixTableModel) opsTable.getModel();
+            showNoteInfoTextArea.setText(model.getNotesSummary(NotesManager.showNotesForRow(model
+                    .getValueAt(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()), 0).toString())));
+            JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámkach", JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            logAndNotify(ex);
+        }
+    }//GEN-LAST:event_showNotesForRowButtonActionPerformed
+
     //Auxiliary methods
     //Returns new SwingWorker for searching for order.
     private SwingWorker getOrderSeachSwingWorker(String query, AWTEvent evt) {
@@ -966,7 +1046,7 @@ public class MainWindow extends javax.swing.JFrame {
         tcm.hideColumn("Číslo položky");
         tcm.hideColumn("Zákazka");
         tcm.hideColumn("Pracovisko");
-        
+
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(opsTableModel);
         sorter.setComparator(11, new Comparator<String>() {
             @Override
@@ -979,8 +1059,8 @@ public class MainWindow extends javax.swing.JFrame {
         sorter.setComparator(3, new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
-                Integer v1 = Integer.parseInt(o1.replaceAll("\\s+",""));
-                Integer v2 = Integer.parseInt(o2.replaceAll("\\s+",""));
+                Integer v1 = Integer.parseInt(o1.replaceAll("\\s+", ""));
+                Integer v2 = Integer.parseInt(o2.replaceAll("\\s+", ""));
                 return v1.compareTo(v2);
             }
         });
@@ -1000,7 +1080,8 @@ public class MainWindow extends javax.swing.JFrame {
             opsTable.getColumnModel().getColumn(4).setPreferredWidth(200);
             universalCellRenderer.setThickLines(false);
         }
-        //opsTableModel.resize(opsTable);
+        
+        opsTable.setColumnSelectionAllowed(false);
         opsTable.updateUI();
         resultCountLabel.setText(opL.getOperations().size() + " záznamov");
     }
@@ -1125,6 +1206,8 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton showMatrixButton;
     private javax.swing.JButton showNoteButton;
     private javax.swing.JTextArea showNoteInfoTextArea;
+    private javax.swing.JButton showNotesForColumnButton;
+    private javax.swing.JButton showNotesForRowButton;
     private javax.swing.JButton showRescheduledButton;
     private org.jdesktop.swingx.JXDatePicker toDatePicker;
     private org.jdesktop.swingx.JXDatePicker toDatePickerR;
