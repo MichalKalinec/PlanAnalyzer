@@ -50,12 +50,11 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
                     setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, Color.BLACK));
                 }
             }
-            setCellColor(table, row, column);
         }
         return this;
     }
 
-    private void setCellColor(JTable table, int row, int column) {
+/*    private void setCellColor(JTable table, int row, int column) {
         CurrentPlanTableModel model = (CurrentPlanTableModel) table.getModel();
         if (!model.getOpForRow(table.convertRowIndexToModel(row)).isFinished() &&
                 LocalDateTime.now().isAfter(model.getOpForRow(table.convertRowIndexToModel(row)).getEndRequired())) {
@@ -64,7 +63,7 @@ public class UniversalCellRenderer extends DefaultTableCellRenderer {
             this.setBackground(Color.white);
         }
     }
-
+*/
     public void setThickLines(boolean thickLines) {
         this.thickLines = thickLines;
     }
