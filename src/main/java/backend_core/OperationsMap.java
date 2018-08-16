@@ -1,6 +1,5 @@
 package backend_core;
 
-import utils.OperationBuilder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import utils.DBUtils;
+import utils.OperationBuilder;
 
 /**
  * List of operations and map of their notes with methods creating them.
@@ -25,17 +25,18 @@ public class OperationsMap {
 
     //Mutual core of SQL scripts creating instances of Operation from DBs.
     private static final String BASIC_SQL = "SELECT A.orderno, A.opno, A.endOriginal, B.mfop_planqty, B.rtcen_name, F.goodinc, B.imast_descext, B.mfop_remarks, B.mford_delstore,"
-            + " F.startreal, F.endreal, A.endLatest, C.futurePlanned, E.category, E.note, A.manualEnd, D.pastPlanned, B.mford_item, B.mford_duedate, B.mford_dueqty FROM"
+            + " F.startreal, F.endreal, A.endLatest, C.futurePlanned, E.category, E.note, A.manualEnd, D.pastPlanned, B.mford_item, B.mford_duedate, B.qtyreq FROM"
             + " (SELECT orderno, opno, endLatest, endOriginal, manualEnd FROM AHP.dbo.u_Zmeny) AS A"
             + " LEFT JOIN"
-            + " (SELECT imast_descext, mfop_remarks, mford_delstore, mfop_orderno, mfop_opno, mfop_planqty, rtcen_name, mford_item, mford_duedate, mford_dueqty FROM MAX2ostr.maxmast.mfop"
+            + " (SELECT imast_descext, mfop_remarks, mford_delstore, mfop_orderno, mfop_opno, mfop_planqty, rtcen_name, mford_item, mford_duedate,"
+            + " ROUND(mford_dueqty/100*(100-mford_scrappc),imast_decimals) AS qtyreq FROM MAX2ostr.maxmast.mfop"
             + " JOIN"
             + " MAX2ostr.maxmast.rtcen ON mfop_workcen = rtcen_workcen"
             + " JOIN"
             + " MAX2ostr.maxmast.mford ON mford_orderno = mfop_orderno"
             + " JOIN"
             + " MAX2ostr.maxmast.imast ON imast_item = mford_item GROUP BY mfop_orderno, mfop_opno, imast_descext, mfop_remarks,"
-            + " mford_delstore, rtcen_name, mford_item, mfop_planqty, mford_duedate, mford_dueqty) AS B ON A.orderno = B.mfop_orderno AND A.opno = B.mfop_opno"
+            + " mford_delstore, rtcen_name, mford_item, mfop_planqty, mford_duedate, mford_dueqty, mford_scrappc, imast_decimals) AS B ON A.orderno = B.mfop_orderno AND A.opno = B.mfop_opno"
             + " LEFT JOIN"
             + " (SELECT Zakazka, Operacia, SUM(Mnozstvo) AS futurePlanned"
             + " FROM AHP.dbo.fn_Plan(CURRENT_TIMESTAMP,'2200-01-01') GROUP BY Zakazka, Operacia) AS C ON C.Zakazka = A.orderno AND C.Operacia = A.opno"
@@ -63,10 +64,10 @@ public class OperationsMap {
                         + " OR (F.startreal BETWEEN '" + FORMATTER.format(from) + "' AND '" + FORMATTER.format(to) + "')"
                         + " OR (A.endLatest BETWEEN '" + FORMATTER.format(from) + "' AND '" + FORMATTER.format(to) + "')"
                         + " OR (F.endreal BETWEEN '" + FORMATTER.format(from) + "' AND '" + FORMATTER.format(to) + "')"
-                        + " OR (((B.mfop_planqty > F.goodinc AND C.futurePlanned IS NULL)"
+                        + " OR (((B.qtyreq > F.goodinc AND C.futurePlanned IS NULL)"
                         + " OR (C.futurePlanned IS NULL AND F.goodinc IS NULL)"
-                        + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc < B.mfop_planqty)"
-                        + " OR (B.mfop_planqty > C.futurePlanned AND F.goodinc IS NULL)) AND (A.manualEnd IS NULL))"
+                        + " OR (B.qtyreq > C.futurePlanned AND F.goodinc < B.qtyreq)"
+                        + " OR (B.qtyreq > C.futurePlanned AND F.goodinc IS NULL)) AND (A.manualEnd IS NULL))"
                         + " ORDER BY A.orderno, A.opno", conn)) {
             while (r.next()) {
                 if (unfinishedOnly && r.getBoolean(16) == true) {
@@ -185,7 +186,6 @@ public class OperationsMap {
         }
         Operation op = builder.orderNo(r.getString(1))
                 .opNo(r.getString(2))
-                .quantityPlan(r.getDouble(17))
                 .endPlan(DBUtils.getDateTimeFromResultSet(r, 3))
                 .quantityTotal(r.getDouble(4))
                 .workcen(r.getString(5))
@@ -196,6 +196,7 @@ public class OperationsMap {
                 .startReal(DBUtils.getDateTimeFromResultSet(r, 10))
                 .endRescheduled(DBUtils.getDateTimeFromResultSet(r, 12))
                 .manuallyEnded(r.getBoolean(16))
+                .quantityPlan(r.getDouble(17))
                 .itemNo(r.getString(18))
                 .endRequired(DBUtils.getDateTimeFromResultSet(r, 19))
                 .quantityRequired(r.getDouble(20))

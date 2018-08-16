@@ -35,37 +35,6 @@ public class NoteCategoryClass {
         this.description = description;
     }
 
-    public static String getShortDesc(int category) {
-        switch (category) {
-            case 1:
-                return "RučUkonč";
-            case 2:
-                return "ChMat";
-            case 3:
-                return "ChNár";
-            case 4:
-                return "ChPra";
-            case 5:
-                return "ChOpTP";
-            case 6:
-                return "OdČasTP";
-            case 7:
-                return "MešPredOp";
-            case 8:
-                return "ZmPorZák";
-            case 9:
-                return "NáhNepVýr";
-            case 10:
-                return "ChPap";
-            case 11:
-                return "ChOrgPra";
-            case 12:
-                return "Iné";
-            default:
-                return null;
-        }
-    }
-
     public static String getDescWithCat(int category) {
         switch (category) {
             case 1:

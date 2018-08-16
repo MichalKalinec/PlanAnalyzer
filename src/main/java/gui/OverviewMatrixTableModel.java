@@ -47,7 +47,7 @@ public class OverviewMatrixTableModel extends AbstractTableModel {
             return "Stredisko";
         }
         if (columnIndex < getColumnCount() - 1) {
-            return NoteCategoryClass.getShortDesc(columnIndex);
+            return NoteCategoryClass.getDescWithCat(columnIndex);
         }
         if (columnIndex == getColumnCount() - 1) {
             return "Súčet";

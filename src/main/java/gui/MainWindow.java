@@ -24,6 +24,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +36,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
@@ -93,7 +93,7 @@ public class MainWindow extends javax.swing.JFrame {
         } catch (SQLException ex) {
             logAndNotify(ex);
         }
-
+        
         //Initial filling of combobox.
         loadingLabel.setVisible(true);
         new SwingWorker<OperationsMap, Void>() {
@@ -115,7 +115,8 @@ public class MainWindow extends javax.swing.JFrame {
             }
         }.execute();
 
-        //MouseListener for searching with order after doubleclicking the first column.
+        //MouseListener for searching with order after doubleclicking the first column
+        //and showing notes from matrix overview.
         opsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent mouseEvent) {
@@ -130,15 +131,15 @@ public class MainWindow extends javax.swing.JFrame {
                     if (opsTable.getModel() instanceof OverviewMatrixTableModel) {
                         OverviewMatrixTableModel model = (OverviewMatrixTableModel) opsTable.getModel();
                         try {
-                            List<List<Object>> notes = NotesManager.showNotesForColumn(opsTable.convertColumnIndexToModel(column));
+                            List<List<Object>> notesColumn = NotesManager.showNotesForColumn(opsTable.convertColumnIndexToModel(column));
                             List<List<Object>> notesRow = NotesManager.showNotesForRow(model.getValueAt(opsTable.convertRowIndexToModel(row), 0).toString());
                             if (column == opsTable.getColumnCount() - 1) {
                                 showNoteInfoTextArea.setText(model.getNotesSummary(notesRow));
                             } else if (row == opsTable.getRowCount() - 1) {
-                                showNoteInfoTextArea.setText(model.getNotesSummary(notes));
+                                showNoteInfoTextArea.setText(model.getNotesSummary(notesColumn));
                             } else {
-                                notes.retainAll(NotesManager.showNotesForRow(model.getValueAt(opsTable.convertRowIndexToModel(opsTable.getSelectedRow()), 0).toString()));
-                                showNoteInfoTextArea.setText(model.getNotesSummary(notes));
+                                notesColumn.retainAll(notesRow);
+                                showNoteInfoTextArea.setText(model.getNotesSummary(notesColumn));
                             }
                             JOptionPane.showMessageDialog(null, noteInfoScrollPane, "Informácie o poznámkach", JOptionPane.INFORMATION_MESSAGE);
                         } catch (SQLException ex) {
@@ -836,6 +837,11 @@ public class MainWindow extends javax.swing.JFrame {
                     get();
                     opsTable.setModel(matrixTableModel);
                     matrixTableModel.resize(opsTable);
+                    MultiLineTableHeaderRenderer headerRenderer = new MultiLineTableHeaderRenderer();
+                    Enumeration enumK = opsTable.getColumnModel().getColumns();
+                    while (enumK.hasMoreElements()) {
+                        ((TableColumn) enumK.nextElement()).setHeaderRenderer(headerRenderer);
+                    }
                     opsTable.updateUI();
                 } catch (ExecutionException | InterruptedException ex) {
                     logAndNotify(ex);
@@ -1040,13 +1046,21 @@ public class MainWindow extends javax.swing.JFrame {
         return true;
     }
 
+    //Fill table with operations and make minor changes to it depending on workcenters
+    //or orders point of view.
     private void fillTableWithOperations(OperationsMap opL, AWTEvent evt) {
         opsTableModel.setOps(opL);
         opsTable.setModel(opsTableModel);
+        MultiLineTableHeaderRenderer headerRenderer = new MultiLineTableHeaderRenderer();
+        Enumeration enumK = opsTable.getColumnModel().getColumns();
+        while (enumK.hasMoreElements()) {
+            ((TableColumn) enumK.nextElement()).setHeaderRenderer(headerRenderer);
+        }
         tcm.hideColumn("Číslo položky");
         tcm.hideColumn("Zákazka");
         tcm.hideColumn("Pracovisko");
 
+        //set sorters for operation and delay columns
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(opsTableModel);
         sorter.setComparator(11, new Comparator<String>() {
             @Override
@@ -1080,7 +1094,7 @@ public class MainWindow extends javax.swing.JFrame {
             opsTable.getColumnModel().getColumn(4).setPreferredWidth(200);
             universalCellRenderer.setThickLines(false);
         }
-        
+
         opsTable.setColumnSelectionAllowed(false);
         opsTable.updateUI();
         resultCountLabel.setText(opL.getOperations().size() + " záznamov");

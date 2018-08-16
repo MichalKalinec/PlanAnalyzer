@@ -22,7 +22,7 @@ public class CurrentPlanTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 15;
+        return 16;
     }
 
     @Override
@@ -66,6 +66,8 @@ public class CurrentPlanTableModel extends AbstractTableModel {
                 return "Vyrobené množstvo";
             case 14:
                 return "Celkové množstvo";
+            case 15:
+                return "Zákazkový list";
             default:
                 throw new IllegalArgumentException("columnIndex " + columnIndex);
         }
@@ -104,6 +106,8 @@ public class CurrentPlanTableModel extends AbstractTableModel {
             case 13:
                 return Double.class;
             case 14:
+                return Double.class;
+            case 15:
                 return Double.class;
             default:
                 throw new IllegalArgumentException("columnIndex");
@@ -163,6 +167,8 @@ public class CurrentPlanTableModel extends AbstractTableModel {
                 return round(op.getQuantityReal(), 2);
             case 14:
                 return round(op.getQuantityTotal(), 2);
+            case 15:
+                return round(op.getQuantityRequired(), 2);
             default:
                 throw new IllegalArgumentException("columnIndex: " + columnIndex);
         }
@@ -179,10 +185,6 @@ public class CurrentPlanTableModel extends AbstractTableModel {
                     + "Popis: " + ops.getOperations().get(getOpForRow(index)).get(i).getText() + System.getProperty("line.separator"));
         }
         return s;
-    }
-    
-    public void addNote(int index, int cat, String text) {
-        
     }
 
     public Operation getOpForRow(int row) {
