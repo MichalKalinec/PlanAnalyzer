@@ -38,7 +38,7 @@ public class OverviewMatrixTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 14;
+        return NoteCategoryClass.getCategoriesCount() + 2;
     }
 
     @Override

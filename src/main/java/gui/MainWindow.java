@@ -265,7 +265,7 @@ public class MainWindow extends javax.swing.JFrame {
 
         noteCategoryLabel.setText("Vyber druh poznámky");
 
-        for(int i = 1; i <= 12; i++) {
+        for(int i = 1; i <= NoteCategoryClass.getCategoriesCount(); i++) {
             insertIntoCombo(noteCategoryComboBox, new secondary.NoteCategoryClass(i, NoteCategoryClass.getDescWithCat(i)));
         }
 

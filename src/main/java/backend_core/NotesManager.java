@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import secondary.NoteCategoryClass;
 import utils.DBUtils;
 
 /**
@@ -70,7 +72,7 @@ public class NotesManager {
                         + s + " JOIN MAX2ostr.maxmast.rtcen ON mfop_workcen = rtcen_workcen GROUP BY rtcen_name, category ORDER BY rtcen_name ASC", conn)) {
             Map<String, int[]> result = new LinkedHashMap<>();
             while (r.next()) {
-                result.putIfAbsent(r.getString(1), new int[12]);
+                result.putIfAbsent(r.getString(1), new int[NoteCategoryClass.getCategoriesCount()]);
                 if (r.getInt(2) == 0) {
                     continue;
                 }

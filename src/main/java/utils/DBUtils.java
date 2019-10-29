@@ -21,8 +21,6 @@ public final class DBUtils {
     private DBUtils() {
     }
 
-    ;
-
     /**
      * Estabilish and return connection with DB.
      *

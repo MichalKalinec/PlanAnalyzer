@@ -6,12 +6,17 @@ package secondary;
  */
 public class NoteCategoryClass {
 
+    private static final int CATEGORIES_COUNT = 12;
     private int category;
     private String description;
 
     public NoteCategoryClass(int category, String description) {
         this.category = category;
         this.description = description;
+    }
+
+    public static int getCategoriesCount() {
+        return CATEGORIES_COUNT;
     }
 
     @Override
@@ -35,30 +40,31 @@ public class NoteCategoryClass {
         this.description = description;
     }
 
+    //change also sumNotesForWorkcens in case of adding/removing a category
     public static String getDescWithCat(int category) {
         switch (category) {
             case 1:
                 return "ručné ukončenie operácie";
             case 2:
-                return "chýbajúci materiál";
+                return "TPV";
             case 3:
-                return "chýbajúce náradie";
+                return "galvanizovňa";
             case 4:
-                return "chýbajúci pracovník";
+                return "výroba";
             case 5:
-                return "chýbajúca operácia v TP";
+                return "MTZ";
             case 6:
-                return "odchýlka od času v TP";
+                return "chýbajúci pracovník";
             case 7:
-                return "meškanie predchádzajúcich operácií";
+                return "odbyt";
             case 8:
-                return "zmena poradia zákaziek";
+                return "ateliér";
             case 9:
-                return "náhrada nepodarkovej výroby";
+                return "Razidlo";
             case 10:
-                return "chyba v papieroch";
+                return "Materiál";
             case 11:
-                return "chyba v organizácií práce";
+                return "Rez";
             case 12:
                 return "iné";
             default:
